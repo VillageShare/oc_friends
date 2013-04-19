@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<info>
+	<id>friends</id>
+	<name>Friends</name>
+	<description>App Template which uses the app framework</description>
+	<version>1.1</version>
+	<licence>AGPL</licence>
+	<author>Sarah Jones</author>
+	<require>4</require>
+</info>

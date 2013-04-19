@@ -1,0 +1,100 @@
+/**
+* ownCloud - App Template plugin
+*
+* @author Sarah Jones
+* @copyright 2013 Sarah Jones sarah.e.p.jones@gmail.com
+*
+* This library is free software; you can redistribute it and/or
+* modify it under the terms of the GNU AFFERO GENERAL PUBLIC LICENSE
+* License as published by the Free Software Foundation; either
+* version 3 of the License, or any later version.
+*
+* This library is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU AFFERO GENERAL PUBLIC LICENSE for more details.
+*
+* You should have received a copy of the GNU Affero General Public
+* License along with this library.  If not, see <http://www.gnu.org/licenses/>.
+*
+*/
+
+
+/**
+ * Create your custom styles in here
+ */
+#app {
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        padding: 2em;
+}
+
+.heading {
+        margin: 0 0 1em 0;
+        font-size: 12pt;
+        font-weight: bold;
+}
+
+.centered {
+        margin: auto;
+}
+
+.paragraph {
+        line-height: 1.5;
+        padding-bottom: 1em;
+}
+
+
+
+.tabnav {
+	border-bottom: 2px solid;
+
+
+}
+
+.tabnav a {
+
+
+	padding: .5em 5em 0em 5em;
+	margin: .5em;
+	border-width:2px 2px 0px 2px;
+	border-style: solid;
+	border-color: #1d2d44;
+	width: 600px;
+	color: #999999;
+
+}
+
+a.selectedTab-true {
+	color: #333333;
+}
+
+
+.app-body {
+	margin: 3em 3em;
+}
+
+.float-right {
+	float: right;
+}
+
+a.link {
+	color:red;
+}
+p.spacing {
+	margin: 1em 0em;
+}
+
+.button {
+  display: block;
+  width: 115px;
+  height: 25px;
+  background: #4E9CAF;
+  padding: 10px;
+  text-align: center;
+  border-radius: 5px;
+  color: white;
+  font-weight: bold;
+}
