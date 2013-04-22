@@ -32,14 +32,12 @@ class UserFacebookIdMapper extends Mapper {
 
 
 
-	private $tableName;
 
 	/**
 	 * @param API $api: Instance of the API abstraction layer
 	 */
 	public function __construct($api){
-		parent::__construct($api);
-		$this->tableName = '*PREFIX*friends_user_facebook_ids';
+		parent::__construct($api, 'friends_user_facebook_ids');
 	}
 
 
@@ -52,9 +50,9 @@ class UserFacebookIdMapper extends Mapper {
 	 * @return an array of friends
 	 */
 	public function findAllFriendsByUser($userId){
-		$sql = 'SELECT friend_uid2 as friend FROM `' . $this->tableName . '` WHERE friend_uid1 = ?
+		$sql = 'SELECT friend_uid2 as friend FROM `' . $this->getTableName() . '` WHERE friend_uid1 = ?
 			UNION
-			SELECT friend_uid1 as friend FROM `' . $this->tableName . '` WHERE friend_uid2 = ?';
+			SELECT friend_uid1 as friend FROM `' . $this->getTableName() . '` WHERE friend_uid2 = ?';
 		$params = array($userId, $userId);
 
 		$result = array();
@@ -68,7 +66,7 @@ class UserFacebookIdMapper extends Mapper {
 	}
 
 	public function findByFacebookId($facebookId){
-		$sql = 'SELECT * FROM `' . $this->tableName . '` WHERE facebook_id = ?';
+		$sql = 'SELECT * FROM `' . $this->getTableName() . '` WHERE facebook_id = ?';
 		$params = array($facebookId);
 	
 		$result = array();
@@ -88,11 +86,11 @@ class UserFacebookIdMapper extends Mapper {
 
 	public function find($uid, $facebookId=null){
 		if ($facebookId){
-			$sql = 'SELECT * FROM `' . $this->tableName . '` WHERE uid = ? AND facebook_id = ?';
+			$sql = 'SELECT * FROM `' . $this->getTableName() . '` WHERE uid = ? AND facebook_id = ?';
 			$params = array($uid, $facebookId);
 		}
 		else {
-			$sql = 'SELECT * FROM `' . $this->tableName . '` WHERE uid = ?';
+			$sql = 'SELECT * FROM `' . $this->getTableName() . '` WHERE uid = ?';
 			$params = array($uid);
 		}
 		$result = array();
@@ -137,7 +135,7 @@ class UserFacebookIdMapper extends Mapper {
 		if ($this->exists($userFacebookId->getUid())){
 			throw new AlreadyExistsException('Cannot save UserFacebookId with uid = ' . $userFacebookId->getUid() . ' because it already exists');
 		}
-		$sql = 'INSERT INTO `'. $this->tableName . '` (uid, facebook_id, facebook_name)'.
+		$sql = 'INSERT INTO `'. $this->getTableName() . '` (uid, facebook_id, facebook_name)'.
 				' VALUES(?, ?, ?)';
 
 		$params = array(
@@ -156,7 +154,7 @@ class UserFacebookIdMapper extends Mapper {
 		$date = new \DateTime("now");
 		$date = $this->api->getTime();
 
-		$sql = 'UPDATE `' . $this->tableName . '` SET friends_synced_at = ? WHERE uid = ?';
+		$sql = 'UPDATE `' . $this->getTableName() . '` SET friends_synced_at = ? WHERE uid = ?';
 		$params = array(
 			$date,
 			$userFacebookId->getUid()
