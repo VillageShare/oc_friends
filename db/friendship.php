@@ -22,13 +22,14 @@
 
 namespace OCA\Friends\Db;
 
+use \OCA\AppFramework\Db\Entity;
 
-class Friendship {
+class Friendship extends Entity {
 
-	private $uid1;
-	private $uid2;
-	private $updatedAt;
-	private $status;
+	public $uid1;
+	public $uid2;
+	public $updatedAt;
+	public $status;
 
 
 	const ACCEPTED = 1;
@@ -41,41 +42,4 @@ class Friendship {
 			$this->fromRow($fromRow);
 		}
 	}
-
-	public function fromRow($row){
-		$this->uid1 = $row['friend_uid1'];
-		$this->uid2 = $row['friend_uid2'];
-		$this->updatedAt = $row['updated_at'];
-		$this->status = $row['status'];
-	}
-
-
-	public function getUid1(){
-		return $this->uid1;
-	}
-
-	public function getUid2(){
-		return $this->uid2;
-	}
-
-	public function getUpdatedAt(){
-		return $this->updatedAt;
-	}
-
-	public function getStatus(){
-		return $this->status;
-	}
-
-	public function setUid1($uid){
-		$this->uid1 = $uid;
-	}
-
-	public function setUid2($uid){
-		$this->uid2 = $uid;
-	}
-
-	public function setStatus($status){
-		$this->status = $status;
-	}
-
 }
