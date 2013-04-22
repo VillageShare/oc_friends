@@ -326,8 +326,8 @@ class FriendshipController extends Controller {
 		if ($this->friendshipMapper->exists($requester, $currentUser)){
 			$this->api->beginTransaction();
 			$friendship = $this->friendshipMapper->find($requester, $currentUser);
-			if (($requester === $friendship->getUid1() && Friendship::UID1_REQUESTS_UID2 == $friendship->getStatus()) ||
-				($requester === $friendship->getUId2() && Friendship::UID2_REQUESTS_UID1 == $friendship->getStatus())){
+			if (($requester === $friendship->getFriendUid1() && Friendship::UID1_REQUESTS_UID2 == $friendship->getStatus()) ||
+				($requester === $friendship->getFriendUid2() && Friendship::UID2_REQUESTS_UID1 == $friendship->getStatus())){
 				
 				$this->friendshipMapper->accept($friendship);
 			} else {
