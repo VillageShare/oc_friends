@@ -30,6 +30,7 @@ use \OCA\AppFramework\Db\MultipleObjectsReturnedException as MultipleObjectsRetu
 use OCA\Friends\Db\AlreadyExistsException as AlreadyExistsException;
 
 use OCA\MultiInstance\Lib\MILocation as MILocation;
+use \OCA\AppFramework\Db\Entity;
 
 class FriendshipMapper extends Mapper {
 
@@ -242,6 +243,13 @@ class FriendshipMapper extends Mapper {
 		if ($result && $this->api->multiInstanceEnabled()){
 			$mi = $milocationMock ? $milocationMock : 'OCA\MultiInstance\Lib\MILocation';
 			$mi::createQueuedFriendship($friendship->getFriendUid1(), $friendship->getFriendUid2(), $date, $friendship->getStatus());	
+
+			if (!$this->api->userExists($friendship->getFriendUid1())) {
+				$mi::userExistsAtCentralServer($friendship->getFriendUid1());
+			}
+			if (!$this->api->userExists($friendship->getFriendUid2())) {
+				$mi::userExistsAtCentralServer($friendship->getFriendUid2());
+			}
 		}
 		return $result;
 	}
@@ -261,6 +269,13 @@ class FriendshipMapper extends Mapper {
 		if ($result && $this->api->multiInstanceEnabled()){
 			$mi = $milocationMock ? $milocationMock : 'OCA\MultiInstance\Lib\MILocation';
 			$mi::createQueuedFriendship($uids[0], $uids[1], $date, Friendship::ACCEPTED);	
+
+			if (!$this->api->userExists($friendship->getFriendUid1())) {
+				$mi::userExistsAtCentralServer($friendship->getFriendUid1());
+			}
+			if (!$this->api->userExists($friendship->getFriendUid2())) {
+				$mi::userExistsAtCentralServer($friendship->getFriendUid2());
+			}
 		}
 		return $result;
 		
@@ -300,6 +315,13 @@ class FriendshipMapper extends Mapper {
 		if ($result && $this->api->multiInstanceEnabled()){
 			$mi = $milocationMock ? $milocationMock : 'OCA\MultiInstance\Lib\MILocation';
 			$mi::createQueuedFriendship($friendship->getFriendUid1(), $friendship->getFriendUid2(), $date, Friendship::ACCEPTED);	
+
+			if (!$this->api->userExists($friendship->getFriendUid1())) {
+				$mi::userExistsAtCentralServer($friendship->getFriendUid1());
+			}
+			if (!$this->api->userExists($friendship->getFriendUid2())) {
+				$mi::userExistsAtCentralServer($friendship->getFriendUid2());
+			}
 		}
 		return $result;
 
@@ -309,6 +331,7 @@ class FriendshipMapper extends Mapper {
 	 * Deletes a friendship
 	 * @param userId1: the first user
 	 * @param userId2: the second user
+	 * TODO make this so it matches the parent delete format
 	 */
 	public function delete($userId1, $userId2, $milocationMock=null){
 		$date = $this->api->getTime();
