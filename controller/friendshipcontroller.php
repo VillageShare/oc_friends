@@ -192,8 +192,8 @@ class FriendshipController extends Controller {
 							}
 							if (!$this->friendshipMapper->exists($friend->getUid(), $currentUser)){
 								$friendship = new Friendship();
-								$friendship->setUid1($friend->getUid());
-								$friendship->setUid2($currentUser);
+								$friendship->setFriendUid1($friend->getUid());
+								$friendship->setFriendUid2($currentUser);
 								$this->friendshipMapper->create($friendship);
 							}
 							$this->api->commit();
@@ -257,8 +257,8 @@ class FriendshipController extends Controller {
 		$recipientId = $this->params('recipient');
 
 		$friendshipRequest = new Friendship();
-		$friendshipRequest->setUid1($this->api->getUserId()); 
-		$friendshipRequest->setUid2($recipientId);
+		$friendshipRequest->setFriendUid1($this->api->getUserId()); 
+		$friendshipRequest->setFriendUid2($recipientId);
 		$friendshipRequest->setStatus(Friendship::UID1_REQUESTS_UID2);
 		
 

@@ -220,8 +220,8 @@ class FriendshipMapper extends Mapper {
 		$date = $this->api->getTime();
 		if ($uids[0] !== $friendship->getFriendUid1()) {
 			//switch order of request
-			$friendship->setUid1($uids[0]);
-			$friendship->setUid2($uids[1]);
+			$friendship->setFriendUid1($uids[0]);
+			$friendship->setFriendUid2($uids[1]);
 			if ($friendship->getStatus() === Friendship::UID1_REQUESTS_UID2){
 				$friendship->setStatus(Friendship::UID2_REQUESTS_UID1);
 			} else if ($friendship->getStatus() === (Friendship::UID2_REQUESTS_UID1)){
@@ -284,8 +284,8 @@ class FriendshipMapper extends Mapper {
 		$date = $this->api->getTime();
 		if ($uids[0] !== $friendship->getFriendUid1()) {
 			//switch order of request
-			$friendship->setUid1($uids[0]);
-			$friendship->setUid2($uids[1]);
+			$friendship->setFriendUid1($uids[0]);
+			$friendship->setFriendUid2($uids[1]);
 			$friendship->setStatus(Friendship::ACCEPTED);
 		}
 
