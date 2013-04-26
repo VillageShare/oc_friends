@@ -26,6 +26,7 @@ use \OCA\AppFramework\Db\Entity;
 
 class Friendship extends Entity {
 
+	public $id;
 	public $friendUid1;
 	public $friendUid2;
 	public $updatedAt;
