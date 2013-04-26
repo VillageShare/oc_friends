@@ -257,7 +257,7 @@ class FriendshipMapper extends Mapper {
 		);
 
 		$result = $this->execute($sql, $params);
-		if ($result && $this->api->multiInstanceEnabled()){
+		if ($result && $this->api->isAppEnabled('multiinstance')){
 			$mi = $milocationMock ? $milocationMock : 'OCA\MultiInstance\Lib\MILocation';
 			$mi::createQueuedFriendship($friendship->getFriendUid1(), $friendship->getFriendUid2(), $date, $friendship->getStatus());	
 
@@ -283,7 +283,7 @@ class FriendshipMapper extends Mapper {
 		$params = array(Friendship::ACCEPTED, $date, $uids[0], $uids[1]);
 
 		$result = $this->execute($sql, $params);
-		if ($result && $this->api->multiInstanceEnabled()){
+		if ($result && $this->api->isAppEnabled('multiinstance')){
 			$mi = $milocationMock ? $milocationMock : 'OCA\MultiInstance\Lib\MILocation';
 			$mi::createQueuedFriendship($uids[0], $uids[1], $date, Friendship::ACCEPTED);	
 
@@ -329,7 +329,7 @@ class FriendshipMapper extends Mapper {
 		);
 
 		$result = $this->execute($sql, $params);
-		if ($result && $this->api->multiInstanceEnabled()){
+		if ($result && $this->api->isAppEnabled('multiinstance')){
 			$mi = $milocationMock ? $milocationMock : 'OCA\MultiInstance\Lib\MILocation';
 			$mi::createQueuedFriendship($friendship->getFriendUid1(), $friendship->getFriendUid2(), $date, Friendship::ACCEPTED);	
 
@@ -358,7 +358,7 @@ class FriendshipMapper extends Mapper {
 		$params = array(Friendship::DELETED, $date, $userId1, $userId2, $userId2, $userId1);
 		
 		$result = $this->execute($sql, $params);
-		if ($result && $this->api->multiInstanceEnabled()){
+		if ($result && $this->api->isAppEnabled('multiinstance')){
 			$mi = $milocationMock ? $milocationMock : 'OCA\MultiInstance\Lib\MILocation';
 			$mi::createQueuedFriendship($uids[0], $uids[1], $date, Friendship::DELETED);	
 		}
