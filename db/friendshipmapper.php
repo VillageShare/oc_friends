@@ -101,6 +101,23 @@ class FriendshipMapper extends Mapper {
         }
 
 
+	public function findAllByUser($userId){
+		$sql = 'SELECT * FROM `' . $this->getTableName() . '` WHERE (friend_uid1 = ?)
+			UNION
+			SELECT * FROM `' . $this->getTableName() . '` WHERE (friend_uid2 = ?)';
+		$params = array($userId, $userId);
+
+		$result = array();
+		
+		$query_result = $this->execute($sql, $params);
+		while($row = $query_result->fetchRow()){
+			$friend = new Friendship($row);
+			array_push($result, $friend);
+		}
+		return $result;
+	}
+
+
 	/**
 	 * Finds all users requesting friendship of the user 
 	 * @param string $userId: the id of the user that we want to find friendship requests for
