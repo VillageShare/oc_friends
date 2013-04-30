@@ -350,8 +350,10 @@ class FriendshipMapper extends Mapper {
 	 * @param userId2: the second user
 	 * TODO make this so it matches the parent delete format
 	 */
-	public function delete($userId1, $userId2, $milocationMock=null){
+	public function delete(Entity $friendship, $milocationMock=null){
 		$date = $this->api->getTime();
+		$userId1 = $friendship->getFriendUid1();
+		$userId = $friendship->getFriendUid2();
 		$uids = $this->sortUids($userId1, $userId2);
 		
 		$sql = 'UPDATE `' . $this->getTableName() . '` SET status=?, updated_at=? WHERE (friend_uid1 = ? AND friend_uid2 = ?) OR (friend_uid1 = ? AND friend_uid2 = ?)';
