@@ -34,7 +34,7 @@ class FriendshipMapperTest extends \PHPUnit_Framework_TestCase {
 	private $api;
 
 	protected function setUp(){
-		$this->api = $this->getMock('OCA\Friends\Core\FriendsApi', array('prepareQuery', 'getTime', 'log', 'multiInstanceEnabled'), array('friends'));
+		$this->api = $this->getMock('OCA\Friends\Core\FriendsApi', array('prepareQuery', 'getTime', 'log', 'isAppEnabled', 'userExists'), array('friends'));
 		$this->mapper = new FriendshipMapper($this->api);
 		$this->row1 = array(
 			//'friend_uid1' => 'thisisuser1',
@@ -123,8 +123,8 @@ class FriendshipMapperTest extends \PHPUnit_Framework_TestCase {
 			->will($this->returnValue($query));
 
 		$friendship = $this->mapper->find($userId2, $userId1); //send in not alphanumeric order
-		$this->assertEquals($userId1, $friendship->getUid1());
-		$this->assertEquals($userId2, $friendship->getUid2());
+		$this->assertEquals($userId1, $friendship->getFriendUid1());
+		$this->assertEquals($userId2, $friendship->getFriendUid2());
 	}
 
 	/* Friendship does not exist */
@@ -173,8 +173,8 @@ class FriendshipMapperTest extends \PHPUnit_Framework_TestCase {
 
 	public function testAccept(){
 
-		$userId1 = 'thisisuser1';
-		$userId2 = 'thisisuser2';
+		$userId1 = 'user1@Macha';
+		$userId2 = 'user2@Kalene';
 		$params = array(Friendship::ACCEPTED, 'timestamp', $userId1, $userId2);
 		$expected = 'UPDATE `*PREFIX*friends_friendships` SET status=?, updated_at=? WHERE (friend_uid1 = ? AND friend_uid2 = ?)';
 		
@@ -202,21 +202,36 @@ class FriendshipMapperTest extends \PHPUnit_Framework_TestCase {
 			->will($this->returnValue($query));
 
 		$this->api->expects($this->once())
-			->method('multiInstanceEnabled')
-			->with()
+			->method('isAppEnabled')
+			->with('multiinstance')
 			->will($this->returnValue(true));
 
-		$milocation = $this->getMock('OCA\MultiInstance\Lib\MILocation', array('createQueuedFriendship'));
-		$milocation->staticExpects($this->once())
+		$hooks = $this->getMock('OCA\MultiInstance\Lib\Hooks', array('createQueuedFriendship'));
+		$hooks->staticExpects($this->once())
 			->method('createQueuedFriendship')
 			->with($userId1, $userId2, 'timestamp', Friendship::ACCEPTED)
 			->will($this->returnValue(true));
+
+		$this->api->expects($this->at(3))
+			->method('userExists')
+			->with($userId1)
+			->will($this->returnValue(true));
+
+		$this->api->expects($this->at(4))
+			->method('userExists')
+			->with($userId2)
+			->will($this->returnValue(false));
+
+		$milocation = $this->getMock('OCA\MultiInstance\Lib\MILocation', array('userExistsAtCentralServer'));
+		$milocation->staticExpects($this->once())
+			->method('userExistsAtCentralServer')
+			->with($userId2);
 	
 		$friendship = new Friendship();
-		$friendship->setUid1($userId2);
-		$friendship->setUid2($userId1);
+		$friendship->setFriendUid1($userId2);
+		$friendship->setFriendUid2($userId1);
 
-		$result = $friendshipMapper->accept($friendship, $milocation);
+		$result = $friendshipMapper->accept($friendship, $hooks, $milocation);
 		$this->assertEquals(true, $result);
 		
 
@@ -233,8 +248,8 @@ class FriendshipMapperTest extends \PHPUnit_Framework_TestCase {
 			->will($this->returnValue(false));
 		
 		$friendship = new Friendship();
-		$friendship->setUid1($userId1);
-		$friendship->setUid2($userId2);
+		$friendship->setFriendUid1($userId1);
+		$friendship->setFriendUid2($userId2);
 
 		$this->setExpectedException('OCA\AppFramework\Db\DoesNotExistException');
 		$result = $friendshipMapper->accept($friendship);
@@ -281,8 +296,8 @@ class FriendshipMapperTest extends \PHPUnit_Framework_TestCase {
 			->will($this->returnValue(true));
 	
 		$friendship = new Friendship();
-		$friendship->setUid1($userId2);
-		$friendship->setUid2($userId1);
+		$friendship->setFriendUid1($userId2);
+		$friendship->setFriendUid2($userId1);
 
 		$result = $friendshipMapper->create($friendship, $milocation);
 		$this->assertEquals(true, $result);
@@ -433,11 +448,11 @@ class FriendshipMapperTest extends \PHPUnit_Framework_TestCase {
 			->will($this->returnValue(true));
 	
 		$friendship = new Friendship();
-		$friendship->setUid1($userId1);
-		$friendship->setUid2($userId2);
+		$friendship->setFriendUid1($userId1);
+		$friendship->setFriendUid2($userId2);
 		$friendship->setStatus(Friendship::UID2_REQUESTS_UID1);
 
-		$result = $friendshipMapper->request($friendship, $milocation);
+		$result = $friendshipMapper->request($friendship, $hoosks, $milocation);
 		$this->assertEquals(true, $result);
 		
 	}
@@ -475,8 +490,8 @@ class FriendshipMapperTest extends \PHPUnit_Framework_TestCase {
 			->will($this->returnValue($query));
 	
 		$friendship = new Friendship();
-		$friendship->setUid1($userId1);
-		$friendship->setUid2($userId2);
+		$friendship->setFriendUid1($userId1);
+		$friendship->setFriendUid2($userId2);
 		$friendship->setStatus(Friendship::UID1_REQUESTS_UID2);
 
 		$result = $friendshipMapper->request($friendship);

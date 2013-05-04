@@ -1,0 +1,18 @@
+If you haven't already:
+cp oc_friends/ friends/
+Otherwise you will get an error when attempting to enable the app.
+
+Set up with a Facebook App
+In your owncloud install config/config.php, add the following to the $CONFIG array
+{{{
+  'friends_fb_app_id' => 'MY_FB_APP_ID',
+  'friends_fb_app_secret' => 'MY_FB_APP_SECRET',
+  'friends_fb_app_url' => 'MY_FB_APP_REDIRECT_URL'
+}}}
+
+All of this information can be found on the App Basics Page.
+The MY_FB_APP_REDIRECT_URL is the url that Facebook will redirect your user back to after asking them to login and accept your permissions request for their data.
+This url needs to redirect back to your development or production server.  Since there is only one redirect url, you may need to create a new Facebook app so you can set the redirct url to point to your owncloud installation.
+The url should take the form of: /path/to/owncloud/index.php/apps/friends/facebook
+
+If you are using the multiinstance app, you will need to have the same url for all your instances (Have local DNS point to different servers (IPs) for the same domain name); otherwse you will need a separate Facebook app so you can have different redirect urls.

@@ -271,7 +271,7 @@ class FriendshipMapper extends Mapper {
 		return $result;
 	}
 
-	public function accept($friendship, $milocationMock=null) {
+	public function accept($friendship, $hooksMock=null, $milocationMock=null) {
 		$uids = $this->sortUids($friendship->getFriendUid1(), $friendship->getFriendUid2());
 
 		if (!$this->exists($uids[0], $uids[1])){
@@ -284,14 +284,15 @@ class FriendshipMapper extends Mapper {
 
 		$result = $this->execute($sql, $params);
 		if ($result && $this->api->isAppEnabled('multiinstance')){
-			$mi = $milocationMock ? $milocationMock : 'OCA\MultiInstance\Lib\MILocation';
-			$mi::createQueuedFriendship($uids[0], $uids[1], $date, Friendship::ACCEPTED);	
+			$hooks = $hooksMock ? $hooksMock : 'OCA\MultiInstance\Lib\Hooks';
+			$mi = $milocationMock ? $milocationMock : 'OCA\MultiInstance\Lib\MILocationMock';
+			$hooks::createQueuedFriendship($uids[0], $uids[1], $date, Friendship::ACCEPTED);	
 
-			if (!$this->api->userExists($friendship->getFriendUid1())) {
-				$mi::userExistsAtCentralServer($friendship->getFriendUid1());
+			if (!$this->api->userExists($uids[0])) {
+				$mi::userExistsAtCentralServer($uids[0]);
 			}
-			if (!$this->api->userExists($friendship->getFriendUid2())) {
-				$mi::userExistsAtCentralServer($friendship->getFriendUid2());
+			if (!$this->api->userExists($uids[1])) {
+				$mi::userExistsAtCentralServer($uids[1]);
 			}
 		}
 		return $result;
