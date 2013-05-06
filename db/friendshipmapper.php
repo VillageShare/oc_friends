@@ -214,7 +214,7 @@ class FriendshipMapper extends Mapper {
 	 * @param  $friendship: the friendship to be saved
 	 * @return true if successful
 	 */
-	public function request($friendship, $milocationMock=null){
+	public function request($friendship){
 		//Must save in alphanumeric order (for multiinstance app)
 		$uids = $this->sortUids($friendship->getFriendUid1(), $friendship->getFriendUid2());
 
@@ -235,7 +235,7 @@ class FriendshipMapper extends Mapper {
 		}
 		
 
-		$date = $this->api->getTime();
+		$friendship->setUpdatedAt($this->api->getTime());
 		if ($uids[0] !== $friendship->getFriendUid1()) {
 			//switch order of request
 			$friendship->setFriendUid1($uids[0]);
@@ -251,49 +251,44 @@ class FriendshipMapper extends Mapper {
 
 		$params = array(
 			$friendship->getStatus(),
-			$date,
+			$friendship->getUpdatedAt(),
 			$friendship->getFriendUid1(),
 			$friendship->getFriendUid2()
 		);
 
 		$result = $this->execute($sql, $params);
-		if ($result && $this->api->isAppEnabled('multiinstance')){
-			$mi = $milocationMock ? $milocationMock : 'OCA\MultiInstance\Lib\MILocation';
-			$mi::createQueuedFriendship($friendship->getFriendUid1(), $friendship->getFriendUid2(), $date, $friendship->getStatus());	
-
-			if (!$this->api->userExists($friendship->getFriendUid1())) {
-				$mi::userExistsAtCentralServer($friendship->getFriendUid1());
-			}
-			if (!$this->api->userExists($friendship->getFriendUid2())) {
-				$mi::userExistsAtCentralServer($friendship->getFriendUid2());
-			}
+		if ($result){
+			$this->api->emitHook('FriendshipMapper', 'post_request', array('friendship' => $friendship));
 		}
 		return $result;
 	}
 
-	public function accept($friendship, $hooksMock=null, $milocationMock=null) {
+	public function accept($friendship) {
 		$uids = $this->sortUids($friendship->getFriendUid1(), $friendship->getFriendUid2());
 
 		if (!$this->exists($uids[0], $uids[1])){
 			throw new DoesNotExistException("Cannot accept a friendship that does not exist.  uid1 = {$uids[0]}, uid2 = {$uids[1]}");
 		}
 
-		$date = $this->api->getTime();
 		$sql = 'UPDATE `' . $this->getTableName() . '` SET status=?, updated_at=? WHERE (friend_uid1 = ? AND friend_uid2 = ?)';
-		$params = array(Friendship::ACCEPTED, $date, $uids[0], $uids[1]);
+		$friendship->setStatus(Friendship::ACCEPTED);
+		$friendship->setUpdatedAt($this->api->getTime());
+		if ($uids[0] !== $friendship->getFriendUid1()) {
+			//switch order of request
+			$friendship->setFriendUid1($uids[0]);
+			$friendship->setFriendUid2($uids[1]);
+		}
+
+		$params = array(
+			$friendship->getStatus(),
+			$friendship->getUpdatedAt(),
+			$friendship->getFriendUid1(),
+			$friendship->getFriendUid2()
+		);
 
 		$result = $this->execute($sql, $params);
-		if ($result && $this->api->isAppEnabled('multiinstance')){
-			$hooks = $hooksMock ? $hooksMock : 'OCA\MultiInstance\Lib\Hooks';
-			$mi = $milocationMock ? $milocationMock : 'OCA\MultiInstance\Lib\MILocationMock';
-			$hooks::createQueuedFriendship($uids[0], $uids[1], $date, Friendship::ACCEPTED);	
-
-			if (!$this->api->userExists($uids[0])) {
-				$mi::userExistsAtCentralServer($uids[0]);
-			}
-			if (!$this->api->userExists($uids[1])) {
-				$mi::userExistsAtCentralServer($uids[1]);
-			}
+		if ($result){
+			$this->api->emitHook('FriendshipMapper', 'post_accept', array('friendship' => $friendship));
 		}
 		return $result;
 		
@@ -302,7 +297,7 @@ class FriendshipMapper extends Mapper {
 	/**
 	 * This method bypasses the request and accept for Facebook sync
 	 */
-	public function create($friendship, $milocationMock=null) {
+	public function create($friendship) {
 		//Must save in alphanumeric order (for multiinstance app)
 		$uids = $this->sortUids($friendship->getFriendUid1(), $friendship->getFriendUid2());
 
@@ -314,32 +309,24 @@ class FriendshipMapper extends Mapper {
 			' VALUES(?, ?, ?, ?)';
 		
 
-		$date = $this->api->getTime();
 		if ($uids[0] !== $friendship->getFriendUid1()) {
 			//switch order of request
 			$friendship->setFriendUid1($uids[0]);
 			$friendship->setFriendUid2($uids[1]);
-			$friendship->setStatus(Friendship::ACCEPTED);
 		}
+		$friendship->setStatus(Friendship::ACCEPTED);
+		$friendship->setUpdatedAt($this->api->getTime());
 
 		$params = array(
-			Friendship::ACCEPTED,
-			$date,
+			$friendship->getStatus(),
+			$friendship->getUpdatedAt(),
 			$friendship->getFriendUid1(),
 			$friendship->getFriendUid2()
 		);
 
 		$result = $this->execute($sql, $params);
-		if ($result && $this->api->isAppEnabled('multiinstance')){
-			$mi = $milocationMock ? $milocationMock : 'OCA\MultiInstance\Lib\MILocation';
-			$mi::createQueuedFriendship($friendship->getFriendUid1(), $friendship->getFriendUid2(), $date, Friendship::ACCEPTED);	
-
-			if (!$this->api->userExists($friendship->getFriendUid1())) {
-				$mi::userExistsAtCentralServer($friendship->getFriendUid1());
-			}
-			if (!$this->api->userExists($friendship->getFriendUid2())) {
-				$mi::userExistsAtCentralServer($friendship->getFriendUid2());
-			}
+		if ($result){
+			$this->api->emitHook('FriendshipMapper', 'post_create', array('friendship' => $friendship));
 		}
 		return $result;
 
@@ -351,19 +338,30 @@ class FriendshipMapper extends Mapper {
 	 * @param userId2: the second user
 	 * TODO make this so it matches the parent delete format
 	 */
-	public function delete(Entity $friendship, $milocationMock=null){
-		$date = $this->api->getTime();
-		$userId1 = $friendship->getFriendUid1();
-		$userId = $friendship->getFriendUid2();
-		$uids = $this->sortUids($userId1, $userId2);
+	public function delete(Entity $friendship){
+		$uids = $this->sortUids($friendship->getFriendUid1(), $friendship->getFriendUid2());
 		
 		$sql = 'UPDATE `' . $this->getTableName() . '` SET status=?, updated_at=? WHERE (friend_uid1 = ? AND friend_uid2 = ?) OR (friend_uid1 = ? AND friend_uid2 = ?)';
-		$params = array(Friendship::DELETED, $date, $userId1, $userId2, $userId2, $userId1);
+
+		if ($uids[0] !== $friendship->getFriendUid1()) {
+			//switch order of request
+			$friendship->setFriendUid1($uids[0]);
+			$friendship->setFriendUid2($uids[1]);
+		}
+		$friendship->setStatus(Friendship::DELETED);
+		$friendship->setUpdatedAt($this->api->getTime());
+		$params = array(
+			$friendship->getStatus(),
+			$friendship->getUpdatedAt(),
+			$friendship->getFriendUid1(),
+			$friendship->getFriendUid2(),
+			$friendship->getFriendUid2(),
+			$friendship->getFriendUid1()
+		);
 		
 		$result = $this->execute($sql, $params);
-		if ($result && $this->api->isAppEnabled('multiinstance')){
-			$mi = $milocationMock ? $milocationMock : 'OCA\MultiInstance\Lib\MILocation';
-			$mi::createQueuedFriendship($uids[0], $uids[1], $date, Friendship::DELETED);	
+		if ($result){
+			$this->api->emitHook('FriendshipMapper', 'post_delete', array('friendship' => $friendship));
 		}
 		return $result;
 	}
