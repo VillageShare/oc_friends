@@ -25,15 +25,16 @@ namespace OCA\Friends\DependencyInjection;
 
 use OCA\AppFramework\DependencyInjection\DIContainer as BaseContainer;
 
-use OCA\Friends\Controller\FriendshipController as FriendshipController;
-use OCA\Friends\Controller\SettingsController as SettingsController;
-use OCA\Friends\Db\FriendshipMapper as FriendshipMapper;
-use OCA\Friends\Db\FriendshipRequestMapper as FriendshipRequestMapper;
-use OCA\Friends\Db\UserFacebookIdMapper as UserFacebookIdMapper;
-use OCA\Friends\Db\FacebookFriendMapper as FacebookFriendMapper;
+use OCA\Friends\Controller\FriendshipController;
+use OCA\Friends\Controller\SettingsController;
+use OCA\Friends\Db\FriendshipMapper;
+use OCA\Friends\Db\FriendshipRequestMapper;
+use OCA\Friends\Db\UserFacebookIdMapper;
+use OCA\Friends\BusinessLayer\UserFacebookIdBusinessLayer;
+use OCA\Friends\Db\FacebookFriendMapper;
 
-use OCA\Friends\Core\FileGetContentsWrapper as FileGetContentsWrapper;
-use OCA\Friends\Core\FriendsAPI as FriendsAPI;
+use OCA\Friends\Core\FileGetContentsWrapper;
+use OCA\Friends\Core\FriendsAPI;
 
 class DIContainer extends BaseContainer {
 
@@ -68,6 +69,14 @@ class DIContainer extends BaseContainer {
 
 		$this['SettingsController'] = $this->share(function($c){
 			return new SettingsController($c['API'], $c['Request']);
+		});
+
+
+		/**
+		 * BUSINESSLAYER
+		 */
+		$this['UserFacebookIdBusinessLayer'] = $this->share(function($c){
+			return new UserFacebookIdBusinessLayer($c['API'], $c['FriendshipMapper'], $c['UserFacebookIdMapper']);
 		});
 
 

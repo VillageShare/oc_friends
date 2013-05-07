@@ -34,16 +34,24 @@ use OCA\Friends\Db\FacebookFriend as FacebookFriend;
 
 class FriendshipController extends Controller {
 	
+	private $friendshipMapper;
+	private $userFacebookIdBusinessLayer;
+	private $userFacebookIdMapper;
+
+	private $app_id;
+	private $app_secret;
+	private $my_url;
 
 	/**
 	 * @param Request $request: an instance of the request
 	 * @param API $api: an api wrapper instance
 	 * @param ItemMapper $friendshipMapper: an itemwrapper instance
 	 */
-	public function __construct($api, $request, $friendshipMapper, $userFacebookIdMapper){
+	public function __construct($api, $request, $friendshipMapper, $userFacebookIdMapper, $userFacebookIdBusinessLayer){
 		parent::__construct($api, $request);
 		$this->friendshipMapper = $friendshipMapper;
 		$this->userFacebookIdMapper = $userFacebookIdMapper;
+		$this->userFacebookIdBusinessLayer = $userFacebookIdBusinessLayer;
 		
 		$this->app_id = $this->api->getSystemValue('friends_fb_app_id');
 		$this->app_secret = $this->api->getSystemValue('friends_fb_app_secret');
@@ -174,33 +182,7 @@ class FriendshipController extends Controller {
 								. $params['access_token'];
 						$friends = json_decode($this->api->fileGetContents($graph_url)); //Get user's friends
 						
-						foreach ($friends->data as $facebookFriendObj){
-							try {
-								$friend = $this->userFacebookIdMapper->findByFacebookId($facebookFriendObj->id);
-							}
-							catch (DoesNotExistException $e){
-								//Not an owncloud user who has done the sync or just not an owncloud user
-								continue;
-							}
-							//Transaction
-							$this->api->beginTransaction();
-							
-							if (!$this->api->userExists($friend->getUid())){
-								$this->api->log("User " . $friend->getUid() . " does not exist but is in UserFacebookId table as uid.");
-								$this->api->commit();
-								continue;
-							}
-							if (!$this->friendshipMapper->exists($friend->getUid(), $currentUser)){
-								$friendship = new Friendship();
-								$friendship->setFriendUid1($friend->getUid());
-								$friendship->setFriendUid2($currentUser);
-								$this->friendshipMapper->create($friendship);
-							}
-							$this->api->commit();
-							//End Transaction
-						}
-						$userFacebookId = $this->userFacebookIdMapper->find($currentUser);
-						$this->userFacebookIdMapper->updateSyncTime($userFacebookId);
+						$this->userFacebookIdBusinessLayer->createFriendsFromFacebookFriendsList($friends->data);
 					}
 				}
 			}
