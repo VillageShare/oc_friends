@@ -144,26 +144,27 @@ class UserFacebookIdMapper extends Mapper {
 			$userFacebookId->getFacebookName()
 		);
 
-		//If decide to add a way to update here or a delete (perhaps by making values empty), need to add multiInstance call.
-		return $this->execute($sql, $params);
+		$result = $this->execute($sql, $params);
+		if ($result) {
+			$this->api->emitHook('UserFacebookIdMapper', 'post_save', array('userFacebookId' => $userFacebookId));
+		}
+		return $result;
 	}
 
 
 	public function updateSyncTime($userFacebookId, $milocationMock=null){
 
-		$date = new \DateTime("now");
-		$date = $this->api->getTime();
+		$userFacebookId->setFriendsSyncedAt($this->api->getTime());
 
 		$sql = 'UPDATE `' . $this->getTableName() . '` SET friends_synced_at = ? WHERE uid = ?';
 		$params = array(
-			$date,
+			$userFacebookId->getFriendsSyncedAt(),
 			$userFacebookId->getUid()
 		);
 
 		$result = $this->execute($sql, $params);
-		if ($result && $this->api->multiInstanceEnabled()){
-			$mi = $milocationMock ? $milocationMock : 'OCA\MultiInstance\Lib\MILocation';
-			$mi::createQueuedUserFacebookId($userFacebookId->getUid(), $userFacebookId->getFacebookId(), $userFacebookId->getFacebookName(), $date);	
+		if ($result) {
+			$this->api->emitHook('UserFacebookIdMapper', 'post_update_sync', array('userFacebookId' => $userFacebookId));
 		}
 		return $result;
 	}

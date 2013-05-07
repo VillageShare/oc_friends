@@ -22,13 +22,14 @@
 
 namespace OCA\Friends\Db;
 
+use \OCA\AppFramework\Db\Entity;
 
-class UserFacebookId {
+class UserFacebookId extends Entity {
 
-	private $uid;
-	private $facebookId;
-	private $facebookName;
-	private $friendsSyncedAt;
+	public $uid;
+	public $facebookId;
+	public $facebookName;
+	public $friendsSyncedAt;
 
 	public function __construct($fromRow=null){
 		if($fromRow){
@@ -41,35 +42,6 @@ class UserFacebookId {
 		$this->facebookId = $row['facebook_id'];
 		$this->facebookName = $row['facebook_name'];
 		$this->friendsSyncedAt = $row['friends_synced_at'];
-	}
-
-
-	public function getUid(){
-		return $this->uid;
-	}
-
-	public function getFacebookId(){
-		return $this->facebookId;
-	}
-
-	public function getFacebookName(){
-		return $this->facebookName;
-	}
-		
-	public function getFriendsSyncedAt(){
-		return $this->friendsSyncedAt;
-	}
-
-	public function setUid($uid){
-		$this->uid = $uid;
-	}
-
-	public function setFacebookId($facebookId){
-		$this->facebookId = $facebookId;
-	}
-
-	public function setFacebookName($facebookName){
-		$this->facebookName = $facebookName;
 	}
 
 }

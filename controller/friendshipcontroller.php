@@ -182,7 +182,7 @@ class FriendshipController extends Controller {
 								. $params['access_token'];
 						$friends = json_decode($this->api->fileGetContents($graph_url)); //Get user's friends
 						
-						$this->userFacebookIdBusinessLayer->createFriendsFromFacebookFriendsList($friends->data);
+						$this->userFacebookIdBusinessLayer->createFriendsFromFacebookFriendsList($currentUser, $friends->data);
 					}
 				}
 			}

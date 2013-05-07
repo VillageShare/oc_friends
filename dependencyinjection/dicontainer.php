@@ -64,7 +64,7 @@ class DIContainer extends BaseContainer {
 		 * CONTROLLERS
 		 */
 		$this['FriendshipController'] = $this->share(function($c){
-			return new FriendshipController($c['API'], $c['Request'], $c['FriendshipMapper'], $c['UserFacebookIdMapper']);
+			return new FriendshipController($c['API'], $c['Request'], $c['FriendshipMapper'], $c['UserFacebookIdMapper'], $c['UserFacebookIdBusinessLayer']);
 		});
 
 		$this['SettingsController'] = $this->share(function($c){

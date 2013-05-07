@@ -26,6 +26,7 @@ namespace OCA\Friends\BusinessLayer;
 use \OCA\AppFramework\Core\API;
 use OCA\Friends\Db\UserFacebookIdMapper;
 use OCA\Friends\Db\FriendshipMapper;
+use OCA\Friends\Db\Friendship;
 
 
 class UserFacebookIdBusinessLayer {
@@ -35,12 +36,12 @@ class UserFacebookIdBusinessLayer {
 	private $userFacebookIdMapper;
 	
 	public function __construct(API $api, FriendshipMapper $friendshipMapper, UserFacebookIdMapper $userFacebookIdMapper) {
-		$this->api = $api,
+		$this->api = $api;
 		$this->friendshipMapper = $friendshipMapper;
 		$this->userFacebookIdMapper = $userFacebookIdMapper;
 	}
 
-	public function createFriendsFromFacebookFriendsList($friendsDataList) {
+	public function createFriendsFromFacebookFriendsList($currentUser, $friendsDataList) {
 
 		foreach ($friendsDataList as $facebookFriendObj){
 			try {
