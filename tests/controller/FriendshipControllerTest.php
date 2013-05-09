@@ -38,7 +38,7 @@ class FriendshipControllerTest extends ControllerTestUtility {
 
 	public function testRedirectToIndexAnnotations(){
 		$api = $this->getAPIMock();
-		$controller = new FriendshipController($api, new Request(), null, null, null);
+		$controller = new FriendshipController($api, new Request(), null, null, null, null);
 		$methodName = 'redirectToIndex';
 		$annotations = array('CSRFExemption', 'IsAdminExemption', 'IsSubAdminExemption');
 
@@ -48,7 +48,7 @@ class FriendshipControllerTest extends ControllerTestUtility {
 
 	public function testIndexAnnotations(){
 		$api = $this->getAPIMock();
-		$controller = new FriendshipController($api, new Request(), null, null, null);
+		$controller = new FriendshipController($api, new Request(), null, null, null, null);
 		$methodName = 'index';
 		$annotations = array('CSRFExemption', 'IsAdminExemption', 'IsSubAdminExemption');
 
@@ -59,7 +59,7 @@ class FriendshipControllerTest extends ControllerTestUtility {
 	public function testIndex(){
 		$api = $this->getAPIMock();
 
-		$controller = new FriendshipController($api, new Request(), null, null, null);
+		$controller = new FriendshipController($api, new Request(), null, null, null, null);
 
 		$response = $controller->index();
 		$this->assertEquals('main', $response->getTemplateName());
@@ -70,7 +70,7 @@ class FriendshipControllerTest extends ControllerTestUtility {
 	public function testFacebookSyncFirstLoad(){
 		$api = $this->getAPIMock();
 		$userFacebookIdMapperMock = $this->getMock('UserFacebookIdMapper', array('exists', 'save', 'find'));
-		$controller = new FriendshipController($api, new Request(), null, $userFacebookIdMapperMock);
+		$controller = new FriendshipController($api, new Request(), null, $userFacebookIdMapperMock, null);
 
 		$api->expects($this->at(0))
 					->method('getUserId')
@@ -92,7 +92,7 @@ class FriendshipControllerTest extends ControllerTestUtility {
 		$friendshipMapperMock = $this->getMock('FriendshipMapper', array('exists'));
 		$userFacebookIdMapperMock = $this->getMock('UserFacebookIdMapper', array('exists', 'save', 'find'));
 
-		$controller = new FriendshipController($api, new Request(), $friendshipMapperMock, $userFacebookIdMapperMock);
+		$controller = new FriendshipController($api, new Request(), $friendshipMapperMock, $userFacebookIdMapperMock, null);
 		$controller->my_url = "http://myfakeurl.com/index.php";
 		$controller->app_id = "myid";
 		$controller->app_secret = "mysecret";
@@ -145,10 +145,11 @@ class FriendshipControllerTest extends ControllerTestUtility {
 
 	public function testFacebookSyncResponseRedirectFriendsSync(){
 		$api = $this->getAPIMock('OCA\Friends\Core\FriendsAPI');
-		$friendshipMapperMock = $this->getMock('FriendshipMapper', array('exists'));
-		$userFacebookIdMapperMock = $this->getMock('UserFacebookIdMapper', array('exists', 'save', 'find', 'findByFacebookId', 'updateSyncTime'));
+		$friendshipMapperMock = $this->getMock('\OCA\Friends\Db\FriendshipMapper', array('exists'), array($api));
+		$userFacebookIdMapperMock = $this->getMock('\OCA\Friends\Db\UserFacebookIdMapper', array('exists', 'save', 'find', 'findByFacebookId', 'updateSyncTime'), array($api));
+		$userFacebookIdBusinessLayerMock = $this->getMock('\OCA\Friends\BusinessLayer\UserFacebookIdBusinessLayer', array('createFriendsFromFacebookFriendsList'), array($api, $friendshipMapperMock, $userFacebookIdMapperMock));
 
-		$controller = new FriendshipController($api, new Request(), $friendshipMapperMock, $userFacebookIdMapperMock);
+		$controller = new FriendshipController($api, new Request(), $friendshipMapperMock, $userFacebookIdMapperMock, $userFacebookIdBusinessLayerMock);
 		$controller->my_url = "http://myfakeurl.com/index.php";
 		$controller->app_id = "myid";
 		$controller->app_secret = "mysecret";
@@ -177,70 +178,22 @@ class FriendshipControllerTest extends ControllerTestUtility {
 						->method('fileGetContents')
 						->with($this->equalTo($graphUrl))
 						->will($this->returnValue($fetchedFriendData));
+
+		$data = array(
+			(object) array("name" => "Ryan", "id" => "12345"),
+			(object) array("name" => "Melissa", "id" => "12346"),
+			(object) array("name" => "John", "id" => "12347"),
+			(object) array("name" => "Mallory", "id" => "12348")
+		);
+		$userFacebookIdBusinessLayerMock->expects($this->once())
+						->method('createFriendsFromFacebookFriendsList')
+						->with($this->equalTo('Sarah'), $this->equalTo($data));
+					
 		
 		$userFacebookIdMapperMock->expects($this->at(0))
 						->method('exists')
 						->with($this->equalTo("Sarah", "1234"))
 						->will($this->returnValue(true)); //assuming already saved, not really worth testing, just constructor and save
-
-		$userFacebookIdMapperMock->expects($this->at(1))
-						->method('findByFacebookId')
-						->with($this->equalTo("12345"))
-						->will($this->throwException(new DoesNotExistException('')));  //Test failure
-		$userFacebookIdMelissa = new UserFacebookId();
-		$userFacebookIdMelissa->setFacebookId("12346");
-		$userFacebookIdMelissa->setUid("Melissa");
-		$userFacebookIdMapperMock->expects($this->at(2))
-						->method('findByFacebookId')
-						->with($this->equalTo("12346"))
-						->will($this->returnValue($userFacebookIdMelissa));
-		$api->expects($this->at(3))
-					->method('beginTransaction');
-		$api->expects($this->at(4))
-					->method('userExists')
-					->with($this->equalTo("Melissa"))
-					->will($this->returnValue(false));
-		$api->expects($this->at(5))
-					->method('commit');
-		//There should be no more calls for this user
-
-		$userFacebookIdJohn = new UserFacebookId();
-		$userFacebookIdJohn->setFacebookId("12347");
-		$userFacebookIdJohn->setUid("John");
-		$userFacebookIdMapperMock->expects($this->at(3))
-						->method('findByFacebookId')
-						->with($this->equalTo("12347"))
-						->will($this->returnValue($userFacebookIdJohn));
-		$api->expects($this->at(6))
-					->method('beginTransaction');
-		$api->expects($this->at(7))
-					->method('userExists')
-					->with($this->equalTo("John"))
-					->will($this->returnValue(true));
-		$friendshipMapperMock->expects($this->any()) //all of the remaining users will exist
-					->method('exists')
-					->will($this->returnValue(true)); //assuming saved, not really worth testing
-		$api->expects($this->at(8))
-					->method('commit');
-		$userFacebookIdMallory = new UserFacebookId();
-		$userFacebookIdMallory->setFacebookId("12348");
-		$userFacebookIdMallory->setUid("Mallory");
-		$userFacebookIdMapperMock->expects($this->at(4))
-						->method('findByFacebookId')
-						->with($this->equalTo("12348"))
-						->will($this->returnValue($userFacebookIdMallory));
-		$api->expects($this->at(9))
-					->method('beginTransaction');
-		$api->expects($this->at(10))
-					->method('userExists')
-					->with($this->equalTo("Mallory"))
-					->will($this->returnValue(true));
-		$api->expects($this->at(11))
-					->method('commit');
-
-		$userFacebookIdMapperMock->expects($this->once())
-					->method('updateSyncTime')
-					->will($this->returnValue(true));
 
 		$userFacebookIdObj = new UserFacebookId();
 		$userFacebookIdObj->setFacebookName('Sarah J');
@@ -262,43 +215,5 @@ class FriendshipControllerTest extends ControllerTestUtility {
 		$response = $controller->facebookSync();
 
 	}
-
-	public function testSetSystemValueAnnotations(){
-/*		$api = $this->getAPIMock();
-		$controller = new FriendshipController($api, new Request(), null);	
-		$methodName = 'setSystemValue';
-		$annotations = array('Ajax');
-
-		$this->assertAnnotations($controller, $methodName, $annotations);
-*/	}
-
-
-	public function testSetSystemValue(){
-/*		$post = array('somesetting' => 'this is a test');
-		$request = new Request(array(), $post);
-
-		// create an api mock object
-		$api = $this->getAPIMock();
-
-		// expects to be called once with the method
-		// setSystemValue('somesetting', 'this is a test')
-		$api->expects($this->once())
-					->method('setSystemValue')
-					->with(	$this->equalTo('somesetting'),
-							$this->equalTo('this is a test'));
-
-		// we want to return the appname friends when this method
-		// is being called
-		$api->expects($this->any())
-					->method('getAppName')
-					->will($this->returnValue('friends'));
-
-		$controller = new FriendshipController($api, $request, null);
-		$response = $controller->setSystemValue(null);
-
-		// check if the correct parameters of the json response are set
-		$this->assertEquals($post, $response->getParams());
-*/	}
-
 
 }

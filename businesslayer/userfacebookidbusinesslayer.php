@@ -24,6 +24,7 @@
 namespace OCA\Friends\BusinessLayer;
 
 use \OCA\AppFramework\Core\API;
+use \OCA\AppFramework\Db\DoesNotExistException;
 use OCA\Friends\Db\UserFacebookIdMapper;
 use OCA\Friends\Db\FriendshipMapper;
 use OCA\Friends\Db\Friendship;

@@ -38,9 +38,9 @@ class FriendshipController extends Controller {
 	private $userFacebookIdBusinessLayer;
 	private $userFacebookIdMapper;
 
-	private $app_id;
-	private $app_secret;
-	private $my_url;
+	public $app_id;
+	public $app_secret;
+	public $my_url;
 
 	/**
 	 * @param Request $request: an instance of the request
