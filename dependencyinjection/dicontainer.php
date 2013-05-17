@@ -26,6 +26,7 @@ namespace OCA\Friends\DependencyInjection;
 use OCA\AppFramework\DependencyInjection\DIContainer as BaseContainer;
 
 use OCA\Friends\Controller\FriendshipController;
+use OCA\Friends\Controller\SettingsController;
 use OCA\Friends\Db\FriendshipMapper;
 use OCA\Friends\Db\FriendshipRequestMapper;
 use OCA\Friends\Db\UserFacebookIdMapper;
@@ -64,6 +65,10 @@ class DIContainer extends BaseContainer {
 		 */
 		$this['FriendshipController'] = $this->share(function($c){
 			return new FriendshipController($c['API'], $c['Request'], $c['FriendshipMapper'], $c['UserFacebookIdMapper'], $c['UserFacebookIdBusinessLayer']);
+		});
+
+		$this['SettingsController'] = $this->share(function($c){
+			return new SettingsController($c['API'], $c['Request']);
 		});
 
 
