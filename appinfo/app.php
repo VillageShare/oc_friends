@@ -47,3 +47,5 @@ namespace OCA\Friends;
 	'name' => \OC_L10N::get('friends')->t('Friends') 
 	
 ));
+
+\OCP\Util::connectHook('Cache', 'post_deleteUser', 'OCA\Friends\Lib\Hooks', 'deleteUserFriendships');

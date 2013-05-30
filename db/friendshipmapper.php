@@ -29,7 +29,6 @@ use \OCA\AppFramework\Db\DoesNotExistException as DoesNotExistException;
 use \OCA\AppFramework\Db\MultipleObjectsReturnedException as MultipleObjectsReturnedException;
 use OCA\Friends\Db\AlreadyExistsException as AlreadyExistsException;
 
-use OCA\MultiInstance\Lib\MILocation as MILocation;
 use \OCA\AppFramework\Db\Entity;
 
 class FriendshipMapper extends Mapper {
@@ -100,7 +99,11 @@ class FriendshipMapper extends Mapper {
                 return $displayNames;
         }
 
-
+        /**
+	 * Finds all existing friendships associated with a single user.
+	 * @param string $userID: the id of the user that we want to find all existing friendships for
+	 * @return an array of friendships
+	 */
 	public function findAllByUser($userId){
 		$sql = 'SELECT * FROM `' . $this->getTableName() . '` WHERE (friend_uid1 = ?)
 			UNION
