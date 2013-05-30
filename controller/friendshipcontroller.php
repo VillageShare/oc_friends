@@ -280,7 +280,10 @@ class FriendshipController extends Controller {
 		}
 
 		if($this->friendshipMapper->exists($requester, $recipient)){
-			$this->friendshipMapper->delete($requester, $recipient);
+			$friendship = new Friendship();
+			$friendship->setFriendUid1($requester);
+			$friendship->setFriendUid2($recipient);
+			$this->friendshipMapper->delete($friendship);
 			//TODO: return something useful
 			return $this->renderJSON(array(true));
 		}
@@ -367,12 +370,15 @@ class FriendshipController extends Controller {
 	 * @IsAdminExemption
 	 *
 	 * @brief deletes a Friendship for the current user
-	 * @param 
+	 * Currently not enabled in user interface; because deleting shares needs to happen at the same time
 	 */
 	public function removeFriendship(){
 		$userUid = $this->params('friend');
 		$currentUser = $this->api->getUserId();
-		$this->friendshipMapper->delete($userUid, $currentUser);
+		$friendship = new Friendship();
+		$friendship->setFriendUid1($userUid);
+		$friendship->setFriendUid2($currentUser);
+		$this->friendshipMapper->delete($friendship);
 
 		//TODO: return useful info
 		return $this->renderJSON(array(true));

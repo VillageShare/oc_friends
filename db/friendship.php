@@ -39,6 +39,8 @@ class Friendship extends Entity {
 	const UID2_REQUESTS_UID1 = 4;
 
 	public function __construct($fromRow=null){
+		$this->addType('id', 'int');
+		$this->addType('status', 'int');
 		if($fromRow){
 			$this->fromRow($fromRow);
 		}
