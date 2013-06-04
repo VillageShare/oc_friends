@@ -41,14 +41,11 @@ class Hooks {
         static public function deleteUserFriendships($uid) {
                 $di = new DIContainer();
                 $api = $di['API'];
-                if ($centralServerName !== $api->getAppValue('location')) {
-                        //Delete Friendships
-                        $userfriendships = $qfm->findAll($uid);
-                        foreach($userfriendships as $friendship) {
-				/* WARNING: This function is liable to change */
-				$di['FriendshipMapper']->delete($friendship);
-                        }
+                //Delete Friendships
+                $userfriendships = $qfm->findAll($uid);
+                foreach($userfriendships as $friendship) {
+			/* WARNING: This function is liable to change */
+			$di['FriendshipMapper']->delete($friendship);
                 }
-
         }
 }
