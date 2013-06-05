@@ -53,9 +53,9 @@ class FriendshipMapper extends Mapper {
 	 * @return an array of friends
 	 */
 	public function findAllFriendsByUser($userId){
-		$sql = 'SELECT friend_uid2 as friend FROM `' . $this->getTableName() . '` WHERE (friend_uid1 = ? AND status = ?)
+		$sql = 'SELECT friend_uid2 as friend FROM `' . $this->getTableName() . '` WHERE (`friend_uid1` = ? AND `status` = ?)
 			UNION
-			SELECT friend_uid1 as friend FROM `' . $this->getTableName() . '` WHERE (friend_uid2 = ? AND status = ?)';
+			SELECT friend_uid1 as friend FROM `' . $this->getTableName() . '` WHERE (`friend_uid2` = ? AND `status` = ?)';
 		$params = array($userId, Friendship::ACCEPTED, $userId, Friendship::ACCEPTED);
 
 		$result = array();
@@ -105,16 +105,16 @@ class FriendshipMapper extends Mapper {
 	 * @return an array of friendships
 	 */
 	public function findAllByUser($userId){
-		$sql = 'SELECT * FROM `' . $this->getTableName() . '` WHERE (friend_uid1 = ?)
+		$sql = 'SELECT * FROM `' . $this->getTableName() . '` WHERE (`friend_uid1` = ?)
 			UNION
-			SELECT * FROM `' . $this->getTableName() . '` WHERE (friend_uid2 = ?)';
+			SELECT * FROM `' . $this->getTableName() . '` WHERE (`friend_uid2` = ?)';
 		$params = array($userId, $userId);
 
 		$result = array();
 		
 		$query_result = $this->execute($sql, $params);
 		while($row = $query_result->fetchRow()){
-			$friend = new Friendship($row);
+			$friend = $row['friend'];
 			array_push($result, $friend);
 		}
 		return $result;
@@ -344,7 +344,7 @@ class FriendshipMapper extends Mapper {
 	public function delete(Entity $friendship){
 		$uids = $this->sortUids($friendship->getFriendUid1(), $friendship->getFriendUid2());
 		
-		$sql = 'UPDATE `' . $this->getTableName() . '` SET status=?, updated_at=? WHERE (friend_uid1 = ? AND friend_uid2 = ?) OR (friend_uid1 = ? AND friend_uid2 = ?)';
+		$sql = 'UPDATE `' . $this->getTableName() . '` SET `status`=?, `updated_at`=? WHERE (`friend_uid1` = ? AND `friend_uid2` = ?) OR (`friend_uid1` = ? AND `friend_uid2` = ?)';
 
 		if ($uids[0] !== $friendship->getFriendUid1()) {
 			//switch order of request

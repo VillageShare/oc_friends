@@ -48,4 +48,4 @@ namespace OCA\Friends;
 	
 ));
 
-\OCP\Util::connectHook('FriendshipMapper', 'post_deleteUser', 'OCA\Friends\Lib\Hooks', 'deleteUserFriendships');
+\OCP\Util::connectHook('OC_User', 'post_deleteUser', 'OCA\Friends\Lib\Hooks', 'deleteUserFriendships');
