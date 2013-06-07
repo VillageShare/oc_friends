@@ -25,6 +25,7 @@ namespace OCA\Friends\Controller;
 
 use OCA\AppFramework\Controller\Controller as Controller;
 use OCA\AppFramework\Db\DoesNotExistException as DoesNotExistException;
+use \OCA\Friends\Db\AlreadyExistsException;
 use OCA\AppFramework\Http\RedirectResponse as RedirectResponse;
 
 use OCA\Friends\Db\Friendship as Friendship;
@@ -244,55 +245,17 @@ class FriendshipController extends Controller {
 		$friendshipRequest->setStatus(Friendship::UID1_REQUESTS_UID2);
 		
 
-		//TODO: error handling
-		if($this->friendshipMapper->request($friendshipRequest)){
-			//TODO: return something useful
-			return $this->renderJSON(array(true));
-		}
-		else {
-			//TODO: return something useful
-			return $this->renderJSON(array(false));
+		try {
+			if($this->friendshipMapper->request($friendshipRequest)){
+				return $this->renderJSON(array('success' => true));
+			}
+			else {
+				return $this->renderJSON(array('success' => false));
+			}
 		}	
-	}
-
-	/** 
-	 * @Ajax
-	 * @IsSubAdminExemption
-	 * @IsAdminExemption
-	 *
-	 * @brief removes a FriendshipRequest
-	 * @param 
-	 */
-	public function removeFriendshipRequest(){
-		$userUid = $this->params('userUid');
-		$sentOrReceived = $this->params('sentOrReceived');
-
-		if ($sentOrReceived === 'sent'){
-			$recipient = $userUid;
-			$requester = $this->api->getUserId();
+		catch (AlreadyExistsException $e) {
+			return $this->renderJSON(array('success'=>false));
 		}
-		else if ($sentOrReceived === 'received'){
-			$recipient = $this->api->getUserId();
-			$requester = $userUid;
-		}
-		else {
-			//TODO: error handling
-		}
-
-		if($this->friendshipMapper->exists($requester, $recipient)){
-			$friendship = new Friendship();
-			$friendship->setFriendUid1($requester);
-			$friendship->setFriendUid2($recipient);
-			$this->friendshipMapper->delete($friendship);
-			//TODO: return something useful
-			return $this->renderJSON(array(true));
-		}
-		else {
-			//TODO: error handling
-			error_log("cannot find friendshiprequest for removeFriendshipRequest");
-		}
-		
-
 	}
 
 		
@@ -320,10 +283,9 @@ class FriendshipController extends Controller {
 				error_log("Error in acceptFriendshipRequest");
 			}
 			$this->api->commit();
+			return $this->renderJSON(array('success' => true));
 		}
-
-		//TODO: change this to return something useful
-		return $this->renderJSON(array(true));
+		return $this->renderJSON(array('success' => false));
 	}
 
 
@@ -375,13 +337,21 @@ class FriendshipController extends Controller {
 	public function removeFriendship(){
 		$userUid = $this->params('friend');
 		$currentUser = $this->api->getUserId();
-		$friendship = new Friendship();
-		$friendship->setFriendUid1($userUid);
-		$friendship->setFriendUid2($currentUser);
-		$this->friendshipMapper->delete($friendship);
 
-		//TODO: return useful info
-		return $this->renderJSON(array(true));
-
+		if($this->friendshipMapper->exists($userUid, $currentUser)){
+			$friendship = new Friendship();
+			$friendship->setFriendUid1($userUid);
+			$friendship->setFriendUid2($currentUser);
+			if ($this->friendshipMapper->delete($friendship)) {
+				return $this->renderJSON(array('success' => true));
+			}
+			else {
+				return $this->renderJSON(array('success' => false));
+			}
+		}
+		else {
+			//TODO: error handling
+			error_log("Cannot find Friendship for removeFriendship");
+		}
 	}
 }

@@ -12,28 +12,11 @@
 
 
 angular.module('Friends').factory 'FriendsRequest',
-['$http', '$rootScope', 'Config', '_FriendsRequest', 'Publisher',
-($http, $rootScope, Config, _FriendsRequest, Publisher) ->
-	return new _FriendsRequest($http, $rootScope, Config, Publisher)
+['$http', 'Config', '_FriendsRequest', 'Publisher',
+($http, Config, _FriendsRequest, Publisher) ->
+	return new _FriendsRequest($http, Config, Publisher)
 ]
 
-#FriendshipRequest
-
-
-angular.module('Friends').factory 'FRModel',
-['_FRModel',
-(_FRModel) ->
-	return new _FRModel()
-]
-
-
-angular.module('Friends').factory 'Publisher',
-['_Publisher', 'FRModel',
-(_Publisher, FRModel) ->
-	publisher = new _Publisher()
-	publisher.subscribeModelTo(FRModel, 'friendshiprequests')
-	return publisher
-]
 
 
 #Friendship
@@ -50,6 +33,7 @@ angular.module('Friends').factory 'Publisher',
 (_Publisher, FriendshipModel) ->
 	publisher = new _Publisher()
 	publisher.subscribeModelTo(FriendshipModel, 'friendships')
+	publisher.subscribeModelTo(FRModel, 'friendshiprequests')
 	return publisher
 ]
 

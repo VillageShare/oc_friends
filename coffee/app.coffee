@@ -2,7 +2,7 @@
 # ownCloud
 #
 # @author Sarah Jones
-# Copyright (c) 2012 - Bernhard Posselt <nukeawhale@gmail.com>
+# Copyright (c) 2013 - Sarah Jones <sarahe.e.p.jones@gmail.com>
 #
 # This file is licensed under the Affero General Public License version 3 or later.
 # See the COPYING-README file
@@ -27,10 +27,8 @@ angular.module('Friends', ['OC']).config ['$provide', '$interpolateProvider',
 	# forward and backward and change the state of your app
 	# http:#docs.angularjs.org/api/ng.$route
 	Config.routes =
-		saveNameRoute: 'friends_ajax_setsystemvalue'
 		createFriendshipRequestRoute: 'friends_ajax_createFriendshipRequest'
 		acceptFriendshipRequestRoute: 'friends_ajax_acceptFriendshipRequest'
-		removeFriendshipRequestRoute: 'friends_ajax_removeFriendshipRequest'
 		getFriendshipRequestsRoute: 'friends_ajax_getFriendshipRequests'
 		getFriendshipsRoute: 'friends_ajax_getFriendships'
 		removeFriendshipRoute: 'friends_ajax_removeFriendship'

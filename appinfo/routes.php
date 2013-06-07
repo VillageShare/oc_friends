@@ -75,12 +75,6 @@ $this->create('friends_ajax_createFriendshipRequest', '/friendshipRequest')->pos
 	}
 );
 
-$this->create('friends_ajax_removeFriendshipRequest', '/removeFriendshipRequest')->post()->action(
-	function($params){
-		App::main('FriendshipController', 'removeFriendshipRequest', $params, new DIContainer());
-	}
-);
-
 $this->create('friends_ajax_acceptFriendshipRequest', '/acceptFriendshipRequest')->post()->action(
 	function($params){
 		App::main('FriendshipController', 'acceptFriendshipRequest', $params, new DIContainer());

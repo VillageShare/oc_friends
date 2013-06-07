@@ -98,3 +98,10 @@ p.spacing {
   color: white;
   font-weight: bold;
 }
+
+span.bold {
+	font-weight:normal;
+}
+span.bold:hover {
+	font-weight:bold;
+}

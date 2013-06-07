@@ -21,23 +21,26 @@ angular.module('Friends').factory '_FriendshipController', ->
 
 		constructor: (@$scope, @config, @request, @friendshipModel) ->
 
-			# bind methods on the scope so that you can access them in the
-			# controllers child HTML
+
+
+			#ajax queries
+
 
 			@$scope.$on 'routesLoaded', =>
-                                @getFriendships(@$scope)
+				@request.getFriendships(@config.routes.getFriendshipsRoute, @$scope)
 
-			@$scope.removeFriendship = (friendship) =>
-				@removeFriendship(friendship)
+			@$scope.removeFriendship = (friend, state) =>
+				@request.removeFriendship(@config.routes.removeFriendshipRoute, @$scope, friend, state)
 
+			@$scope.acceptFriendshipRequest = (requestor) =>
+				@request.acceptFriendshipRequest(@config.routes.acceptFriendshipRequestRoute, @$scope, requestor)
 
-		#ajax queries
+			@$scope.createFriendshipRequest = (recipient) =>
+				@request.createFriendshipRequest(@config.routes.createFriendshipRequestRoute, @$scope, recipient)
 
+			@$scope.$on 'routesLoaded', =>
+				console.log('requesting friendship requests')
+				@request.getFriendshipRequests(@config.routes.getFriendshipRequestsRoute, @$scope)
 
-		getFriendships: (scope) ->
-			@request.getFriendships(@config.routes.getFriendshipsRoute, scope)
-
-		removeFriendship: (friendship) ->
-			@request.removeFriendship(@config.routes.removeFriendshipRoute, friendship)
 
 	return FriendshipController

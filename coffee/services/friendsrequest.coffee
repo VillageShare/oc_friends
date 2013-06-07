@@ -18,15 +18,10 @@ angular.module('Friends').factory '_FriendsRequest',
 	class FriendsRequest extends _Request
 
 
-		constructor: ($http, $rootScope, Config, Publisher) ->
-			super($http, $rootScope, Config, Publisher)
+		constructor: ($http, Config, Publisher) ->
+			super($http, Config, Publisher)
 
 
-		saveName: (route, name) ->
-			data =
-				somesetting: name
-
-			@post(route, {}, data)
 
 
 		# Create your local request methods in here
@@ -44,28 +39,37 @@ angular.module('Friends').factory '_FriendsRequest',
 
 
 		#accept a friend request
-		acceptFriendshipRequest: (route, friendUid) ->
+		acceptFriendshipRequest: (route, scope, friendUid) ->
 			data =
 				acceptedFriend: friendUid
+			success = (data) -> 
+				if data.data.success
+					scope.receivedFriendshipRequests.remove(friendUid)				
+					scope.friendships.push friendUid
+				else
+					alert('Sorry. Accepting the friendship didn\'t work.  Please refresh the page and try again.')
+					
+			failure = (data) ->
+				alert('Sorry. Cannot connect to server')
 
-			@post(route, {}, data)
+			@post(route, {}, data, success, failure)
 
 		#create a friend request
-		createFriendshipRequest: (route, recipientUid) ->
-			console.log(route)
+		createFriendshipRequest: (route, scope, recipientUid) ->
 			data =
 				recipient: recipientUid
 			
-			@post(route, {}, data)
-
-
-		#remove a friend request
-		removeFriendshipRequest: (route, userUid, sentOrReceived) ->
-			data =
-				userUid: userUid
-				sentOrReceived: sentOrReceived
+			success = (data) ->
+				if data.data.success
+					scope.sentFriendshipRequests.push recipientUid
+				else
+					alert('Sorry.  Creating a friendship with that user didn\'t work.  Are you sure you aren\'t already friends with that user?')
+				scope.recipient = ""
+			failure = (data) -> 
+				alert('Sorry. Cannot connect to server.')
 			
-			@post(route, {}, data)
+			@post(route, {}, data, success, failure)
+
 
 
 		#get Friendships
@@ -75,12 +79,28 @@ angular.module('Friends').factory '_FriendsRequest',
 
 			@post(route, {}, {}, success)			
 			
-		removeFriendship: (route, friendship) ->
+		#remove Friendship (request or full)
+		removeFriendship: (route, scope, friendUid, state) ->
 			data =
-				friend: friendship
+				friend: friendUid
 
-			@post(route, {}, data)	
+			success = (data) ->
+				if data.data.success
+					if state == 'requested'	
+						scope.sentFriendshipRequests.remove(friendUid)
+					else if state == 'received'
+						scope.receivedFriendshipRequests.remove(friendUid)
+					else if state == 'accepted'
+						scope.friendships.remove(friendUid)
+				else
+					alert('Sorry.  Deleting that friendship didn\'t work.  Try refreshing the page.')
 
+			failure = (data) -> 
+				alert('Sorry. Cannot connect to server.')
+
+			@post(route, {}, data, success, failure)	
+
+		Array::remove = (e) -> @[t..t] = [] if (t = @indexOf(e)) > -1
 
 	return FriendsRequest
 ]

@@ -17,11 +17,6 @@
 
 
 #Injection
-angular.module('Friends').controller 'FRController',
-['$scope', 'Config', 'FriendsRequest', '_FRController', 'FRModel',
-($scope, Config, FriendsRequest, _FRController, FRModel) ->
-	return new _FRController($scope, Config, FriendsRequest, FRModel)
-]
 
 angular.module('Friends').controller 'FacebookController',
 ['$scope', 'Config', 'FriendsRequest', '_FacebookController', 'FacebookModel',
