@@ -100,6 +100,7 @@ angular.module('Friends').factory '_FriendsRequest',
 
 			@post(route, {}, data, success, failure)	
 
+		#http://stackoverflow.com/questions/4825812/clean-way-to-remove-element-from-javascript-array-with-jquery-coffeescript
 		Array::remove = (e) -> @[t..t] = [] if (t = @indexOf(e)) > -1
 
 	return FriendsRequest
