@@ -58,4 +58,5 @@ class Friends{
 		return $fm->getDisplayNames($uid, $search, $limit, $offset);
 	}
 
+
 }
