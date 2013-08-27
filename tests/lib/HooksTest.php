@@ -3,8 +3,8 @@
 /**
 * ownCloud - App Template plugin
 *
-* @author Bernhard Posselt
-* @copyright 2012 Bernhard Posselt nukeawhale@gmail.com
+* @author Morgan Vigil
+* @copyright 2013 Morgan Vigil mvigil@cs.ucsb.edu
 *
 * This library is free software; you can redistribute it and/or
 * modify it under the terms of the GNU AFFERO GENERAL PUBLIC LICENSE
@@ -26,6 +26,7 @@ namespace OCA\Friends\Lib;
 require_once(__DIR__ . "/../classloader.php");
 
 use OCA\Friends\Db\Friendship;
+use OCA\Friends\Db\FriendshipMapper;
 
 class HooksTest extends \PHPUnit_Framework_TestCase {
 	private $api;
@@ -34,10 +35,11 @@ class HooksTest extends \PHPUnit_Framework_TestCase {
 	private $row2;
 	private $row3;
 	private $row4;
-
+	private $uid;
 	protected function setUp(){
-$this->api = $this->getMock('OCA\Friends\Core\FriendsApi', array('prepareQuery', 'getTime', 'log', 'isAppEnabled', 'userExists', 'emitHook'), array('friends'));
+		$this->api = $this->getMock('OCA\Friends\Core\FriendsApi', array('prepareQuery', 'getTime', 'log', 'isAppEnabled', 'userExists', 'emitHook'), array('friends'));
                 $this->mapper = new FriendshipMapper($this->api);
+		$this->uid = 'thisisuser1';
                 $this->row1 = array(
                         //'friend_uid1' => 'thisisuser1',
                         //'friend_uid2' => 'thisisuser2'
@@ -56,18 +58,17 @@ $this->api = $this->getMock('OCA\Friends\Core\FriendsApi', array('prepareQuery',
                 );
                 $this->row4 = array(
                         'friend_uid1' => 'thisisuser1',
-                        'friend_uid2' => 'thisisuser2',
+                        'friend_uid2' => 'thisisuser3',
                         'updated_at' => 'sometime',
                         'status' => Friendship::ACCEPTED
                 );
 
 	}
 
-	public function testDeleteUser($params){
+	public function testDeleteUser(){
 
 		//Setup
 		$friendshipMapper = $this->mapper;
-		$uid = $params['uid'];
 		$friendship1 = $friendshipMapper->create($this->row3);
 		$friendship2 = $friendshipMapper->create($this->row4);
 		$friendshiparray = array($friendship1, $friendship2);
@@ -75,7 +76,7 @@ $this->api = $this->getMock('OCA\Friends\Core\FriendsApi', array('prepareQuery',
 		// Assertion
 		$friendshipMapper->expects($this->at(0))
 					->method('findAllFriendsByUser')
-					->with($uid)
+					->with($this->uid)
 					->will($this->returnsValue($friendshiparray));
 
 		$friendshipMapper->expects($this->at(1))
@@ -88,7 +89,7 @@ $this->api = $this->getMock('OCA\Friends\Core\FriendsApi', array('prepareQuery',
                                         ->with($friendship2)
                                         ->will($this->returnsValue(true));
 
-		//FriendsHooks::postDeleteUserDeletesFriendships($uid);
+		#FriendsHooks::postDeleteUserDeletesFriendships($uid);
 	}
 
 }
