@@ -89,7 +89,7 @@ class HooksTest extends \PHPUnit_Framework_TestCase {
                                         ->with($friendship2)
                                         ->will($this->returnValue(true));
 
-		Hooks::deleteUser($this->uid);
+		Hooks::deleteUser($this->uid, $this->mapper);
 	}
 
 }
