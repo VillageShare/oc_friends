@@ -36,7 +36,7 @@ class Hooks {
 		$fm = $c['FriendshipMapper'];
 		$friendships = $fm->findAllFriendsByUser($uid);
 		foreach($friendships as $friendship) {
-			$fm->deleteFriendship($friendship);
+			$fm->delete($friendship);
 		}
 	}
 
