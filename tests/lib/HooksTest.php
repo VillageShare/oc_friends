@@ -38,7 +38,7 @@ class HooksTest extends \PHPUnit_Framework_TestCase {
 	private $uid;
 	protected function setUp(){
 		$this->api = $this->getMock('OCA\Friends\Core\FriendsApi', array('prepareQuery', 'getTime', 'log', 'isAppEnabled', 'userExists', 'emitHook'), array('friends'));
-                $this->mapper = $this->getMock('OCA\Friends\Db\FriendshipMapper', array('findAllFriendsByUser'), array($this->api));
+                $this->mapper = $this->getMock('OCA\Friends\Db\FriendshipMapper', array('findAllFriendsByUser', 'delete'), array($this->api));
 		$this->uid = 'thisisuser1';
                 $this->row1 = array(
                         //'friend_uid1' => 'thisisuser1',
@@ -67,29 +67,29 @@ class HooksTest extends \PHPUnit_Framework_TestCase {
 
 	public function testDeleteUser(){
 
+		$friendshipmapper = $this->mapper;
 		//Setup
-		$friendshipMapper = $this->mapper;
 		$friendship1 = new Friendship($this->row3);
 		$friendship2 = new Friendship($this->row4);
 		$friendshiparray = array($friendship1, $friendship2);
 
 		// Assertion
-		$friendshipMapper->expects($this->at(0))
+		$friendshipmapper->expects($this->at(0))
 					->method('findAllFriendsByUser')
 					->with($this->uid)
 					->will($this->returnValue($friendshiparray));
 
-		$friendshipMapper->expects($this->at(1))
+		$friendshipmapper->expects($this->at(1))
                                         ->method('delete')
                                         ->with($friendship1)
                                         ->will($this->returnValue(true));
 		
-		$friendshipMapper->expects($this->at(2))
+		$friendshipmapper->expects($this->at(2))
                                         ->method('delete')
                                         ->with($friendship2)
                                         ->will($this->returnValue(true));
 
-		Hooks::deleteUser($this->uid, $this->mapper);
+		Hooks::deleteUser($this->uid, $friendshipmapper);
 	}
 
 }
