@@ -49,3 +49,4 @@ namespace OCA\Friends;
 ));
 
 \OCP\Util::connectHook('OC_User', 'post_deleteUser', 'OCA\Friends\Lib\Hooks', 'deleteUser');
+\OCP\Util::connectHook('OC_User', 'post_createUser', 'OCA\Friends\Lib\Hooks', 'createUser');

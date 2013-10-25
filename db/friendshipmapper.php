@@ -86,6 +86,22 @@ class FriendshipMapper extends Mapper {
         }
 
 
+	public function findAllDeactivatedFriendshipsByUser($userId){
+                $sql = 'SELECT * FROM `' . $this->getTableName() . '` WHERE (`friend_uid1` = ? AND `status` = ?)
+                        UNION
+                        SELECT * FROM `' . $this->getTableName() . '` WHERE (`friend_uid2` = ? AND `status` = ?)';
+                $params = array($userId, Friendship::DEACTIVATED, $userId, Friendship::DEACTIVATED);
+
+                $result = array();
+
+                $query_result = $this->execute($sql, $params);
+                while($row =  $query_result->fetchRow()){
+                        $friend = new Friendship($row);
+                        array_push($result, $friend);
+                }
+                return $result;
+        }
+
         /**
          * @brief Get a list of all friends' display names
          * @returns array with  all displayNames (value) and the correspondig uids (key)
@@ -323,13 +339,15 @@ class FriendshipMapper extends Mapper {
 		$uids = $this->sortUids($friendship->getFriendUid1(), $friendship->getFriendUid2());
 
 		if ($this->exists($uids[0], $uids[1])){
-			throw new AlreadyExistsException('Cannot save Friendship with friend_uid1 = ' . $friendship->getFriendUid1() . ' and friend_uid2 = ' . $friendship->getFriendUid2());
-		}
+			$sql = 'UPDATE `' . $this->getTableName() . '` SET status=?, updated_at=? WHERE (friend_uid1 = ? AND friend_uid2 = ?)';
+			$friendship = $this->find($uids[0], $uids[1]);
+			//throw new AlreadyExistsException('Cannot save Friendship with friend_uid1 = ' . $friendship->getFriendUid1() . ' and friend_uid2 = ' . $friendship->getFriendUid2());
+		} else {
 
-		$sql = 'INSERT INTO `'. $this->getTableName() . '` (status, updated_at, friend_uid1, friend_uid2)'.
-			' VALUES(?, ?, ?, ?)';
+			$sql = 'INSERT INTO `'. $this->getTableName() . '` (status, updated_at, friend_uid1, friend_uid2)'.
+				' VALUES(?, ?, ?, ?)';
 		
-
+		}
 		if ($uids[0] !== $friendship->getFriendUid1()) {
 			//switch order of request
 			$friendship->setFriendUid1($uids[0]);
@@ -350,7 +368,6 @@ class FriendshipMapper extends Mapper {
 			$this->api->emitHook('FriendshipMapper', 'post_create', array('friendship' => $friendship));
 		}
 		return $result;
-
 	}
 
 	/**
@@ -386,6 +403,40 @@ class FriendshipMapper extends Mapper {
 		}
 		return $result;
 	}
+
+	/**
+         * Deletes a friendship
+         * @param userId1: the first user
+         * @param userId2: the second user
+         * TODO make this so it matches the parent delete format
+         */
+        public function deactivate(Entity $friendship){
+                $uids = $this->sortUids($friendship->getFriendUid1(), $friendship->getFriendUid2());
+
+                $sql = 'UPDATE `' . $this->getTableName() . '` SET `status`=?, `updated_at`=? WHERE (`friend_uid1` = ? AND `friend_uid2` = ?) OR (`friend_uid1` = ? AND `friend_uid2` = ?)';
+
+                if ($uids[0] !== $friendship->getFriendUid1()) {
+                        //switch order of request
+                        $friendship->setFriendUid1($uids[0]);
+                        $friendship->setFriendUid2($uids[1]);
+                }
+                $friendship->setStatus(Friendship::DEACTIVATED);
+                $friendship->setUpdatedAt($this->api->getTime());
+                $params = array(
+                        $friendship->getStatus(),
+                        $friendship->getUpdatedAt(),
+                        $friendship->getFriendUid1(),
+                        $friendship->getFriendUid2(),
+                        $friendship->getFriendUid2(),
+                        $friendship->getFriendUid1()
+                );
+
+                $result = $this->execute($sql, $params);
+                if ($result){
+                        $this->api->emitHook('FriendshipMapper', 'post_delete', array('friendship' => $friendship));
+                }
+                return $result;
+        }
 
 	/**
 	 * Helper function

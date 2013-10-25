@@ -45,7 +45,23 @@ class Hooks {
 		$friendships = $fm->findAllFriendshipsByUser($uid);
 		#trigger_error($msg);
 		foreach($friendships as $friendship) {
-			$fm->delete($friendship);
+			$fm->deactivate($friendship);
+		}
+	}
+
+	static public function createUser($parameters, $mockFriendshipMapper=null) {
+		$uid = $parameters['uid'];
+		
+		if ($mockFriendshipMapper == null) {
+			$c = new DIContainer();
+			$fm = $c['FriendshipMapper'];
+		} else {
+			$fm = $mockFriendshipMapper;
+		}
+
+		$friendships = $fm->findAllDeactivatedFriendshipsByUser($uid);
+		foreach($friendships as $friendship) {
+			$fm->create($friendship);
 		}
 	}
 

@@ -37,6 +37,7 @@ class Friendship extends Entity {
 	const DELETED = 2;
 	const UID1_REQUESTS_UID2 = 3;
 	const UID2_REQUESTS_UID1 = 4;
+	const DEACTIVATED = 5;
 
 	public function __construct($fromRow=null){
 		$this->addType('id', 'int');
