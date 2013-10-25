@@ -31,8 +31,9 @@ use OCA\Friends\Db\Friendship;
 
 class Hooks {
 
-	static public function deleteUser($uid, $mockFriendshipMapper=null) {
+	static public function deleteUser($parameters, $mockFriendshipMapper=null) {
 		$msg = "Error test message.";
+		$uid = $parameters['uid'];
 		#trigger_error($msg);
 		if ($mockFriendshipMapper == null) {
 			$c = new DIContainer();
@@ -41,7 +42,7 @@ class Hooks {
 			$fm = $mockFriendshipMapper;
 		}
 		#trigger_error($msg);
-		$friendships = $fm->findAllFriendsByUser($uid);
+		$friendships = $fm->findAllFriendshipsByUser($uid);
 		#trigger_error($msg);
 		foreach($friendships as $friendship) {
 			$fm->delete($friendship);

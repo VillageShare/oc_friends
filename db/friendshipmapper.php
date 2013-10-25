@@ -68,6 +68,24 @@ class FriendshipMapper extends Mapper {
 		return $result;
 	}
 
+
+	public function findAllFriendshipsByUser($userId){
+                $sql = 'SELECT * FROM `' . $this->getTableName() . '` WHERE (`friend_uid1` = ? AND `status` = ?)
+                        UNION
+                        SELECT * FROM `' . $this->getTableName() . '` WHERE (`friend_uid2` = ? AND `status` = ?)';
+                $params = array($userId, Friendship::ACCEPTED, $userId, Friendship::ACCEPTED);
+
+                $result = array();
+
+                $query_result = $this->execute($sql, $params);
+                while($row =  $query_result->fetchRow()){
+                        $friend = new Friendship($row);
+                        array_push($result, $friend);
+                }
+                return $result;
+        }
+
+
         /**
          * @brief Get a list of all friends' display names
          * @returns array with  all displayNames (value) and the correspondig uids (key)
