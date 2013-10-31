@@ -161,9 +161,9 @@ class FriendshipMapper extends Mapper {
 	 * @return an array of user uids
 	 */
 	public function findAllRecipientFriendshipRequestsByUser($userId){
-		$sql = 'SELECT friend_uid1 as friend FROM `' . $this->getTableName() . '` WHERE friend_uid2 = ? AND status = ?
+		$sql = 'SELECT friend_uid1 as friend FROM `' . $this->getTableName() . '` WHERE `friend_uid2` = ? AND `status` = ?
 			UNION
-			SELECT friend_uid2 as friend FROM `' . $this->getTableName() . '` WHERE friend_uid1 = ? AND status = ?';
+			SELECT friend_uid2 as friend FROM `' . $this->getTableName() . '` WHERE `friend_uid1` = ? AND `status` = ?';
 		$params = array($userId, Friendship::UID1_REQUESTS_UID2, $userId, Friendship::UID2_REQUESTS_UID1);
 
 		$result = array();
