@@ -27,6 +27,7 @@ use OCA\AppFramework\Controller\Controller as Controller;
 use OCA\AppFramework\Db\DoesNotExistException as DoesNotExistException;
 use \OCA\Friends\Db\AlreadyExistsException;
 use OCA\AppFramework\Http\RedirectResponse as RedirectResponse;
+use OCA\AppFramework\Http\TextResponse as TextResponse;
 
 use OCA\Friends\Db\Friendship as Friendship;
 use OCA\Friends\Db\UserFacebookId as UserFacebookId;
@@ -354,4 +355,233 @@ class FriendshipController extends Controller {
 			error_log("Cannot find Friendship for removeFriendship");
 		}
 	}
+
+//Smruthi's modification to friendship controller to support friends on android	
+	/**
+         * @CSRFExemption
+         * @IsAdminExemption
+         * @IsSubAdminExemption
+         * @IsLoggedInExemption
+         *
+         *
+         * @brief renders the index page
+         * @return an instance of a Response implementation
+         */
+        public function android(){
+                $username =$_POST['USERNAME'];
+                $friends = $_POST['FRIENDS'];
+                error_log($username);
+                error_log("post request");
+                //error_log($friends);
+                error_log("android ".gettype($friends));
+                $UserFacebook = $_POST['USERFACEBOOK'];
+                $friends = stripslashes($friends);
+                $di1 = new DIContainer();
+                $sendFriends = $friends;
+                $sfriends=json_decode($friends);
+                $finalfriends = json_decode($sfriends);
+                $UserFacebook = json_decode($UserFacebook,true);
+
+                $userFacebookObj = new stdClass();
+                $userFacebookObj = (Object)($UserFacebook);
+                error_log($friends);
+                foreach ($UserFacebook as $key => $value)
+                {
+                            $userFacebookObj->$key = $value;
+                }
+                if (!$this->userFacebookIdMapper->exists($username)){
+                        $userFacebookId = new UserFacebookId();
+                        $userFacebookId->setUid($username);
+                        $userFacebookId->setFacebookId($userFacebookObj->id);
+                        $userFacebookId->setFacebookName($userFacebookObj->name);
+                        $this->userFacebookIdMapper->save($userFacebookId);
+                        error_log("Added users facebook id ");
+                 }else{
+                        error_log("User already added to table");
+                }
+
+                $obj = new stdClass();
+                $i=0;
+                $obj1=array();
+                foreach($sfriends as $h1)
+                        foreach($h1 as $t1){
+                                $obj1[$i] = $t1;
+                                $i=$i+1;
+                }
+                foreach($obj1 as $ff)
+                        error_log("print i".$ff->id);
+                $this->userFacebookIdBusinessLayer->createFriendsFromFacebookFriendsList($username,$obj1);
+                return new TextResponse('leaving android function','plain');
+
+
+        }
+
+	/**
+         * @CSRFExemption
+         * @IsAdminExemption
+         * @IsSubAdminExemption
+         * @IsLoggedInExemption
+         *
+         *
+         * @brief renders the index page
+         * @return an instance of a Response implementation
+         */
+        public function friendrequest(){
+
+
+                $username =$_POST['CURRENTUSER'];
+                $requestedfriend = $_POST['REQUESTEDFRIEND'];
+                $requestedfriend = stripslashes($requestedfriend);
+                $friendshipRequest = new Friendship();
+                $friendshipRequest->setFriendUid1($username);
+                $friendshipRequest->setFriendUid2($requestedfriend);
+                $friendshipRequest->setStatus(Friendship::UID1_REQUESTS_UID2);
+                if($this->friendshipMapper->request($friendshipRequest)){
+                        error_log(" added value");
+                }
+                else {
+                        error_log("unable to update database");
+                }
+                return new TextResponse('returning from friendrequest function','plain');
+        }
+
+         /**
+         * @CSRFExemption
+         * @IsAdminExemption
+         * @IsSubAdminExemption
+         * @IsLoggedInExemption
+         *
+         *
+         * @brief renders the index page
+         * @return an instance of a Response implementation
+         */
+
+        public function friendlist(){
+                header('Content-type :application/json');
+                $username = $_POST['CURRENTUSER'];
+                $friends = $this->friendshipMapper->findAllFriendsByUser($username);
+                $params = array(
+                        'friendships' => $friends
+                );
+                return $this->renderJSON($params);
+        }
+
+        /**
+         * @CSRFExemption
+         * @IsAdminExemption
+         * @IsSubAdminExemption
+         * @IsLoggedInExemption
+         *
+         *
+         * @brief renders the index page
+         * @return an instance of a Response implementation
+         */
+        public function getfriendrequest(){
+                error_log("inside function your friend requestAn function ");
+                $username = $_POST['CURRENTUSER'];
+                $receivedfriendrequests = $this->friendshipMapper->findAllRecipientFriendshipRequestsByUser($username);
+                $sentfriendrequests = $this->friendshipMapper->findAllRequesterFriendshipRequestsByUser($username);
+                $params = array(
+                        'receivedFriendshipRequests' => $receivedfriendrequests,
+                        'sentFriendshipRequests' => $sentfriendrequests
+                );
+                return $this->renderJSON($params);
+
+        }
+
+         /**
+         * @CSRFExemption
+         * @IsAdminExemption
+         * @IsSubAdminExemption
+         * @IsLoggedInExemption
+         *
+         *
+         * @brief renders the index page
+         * @return an instance of a Response implementation
+         */
+        public function acceptfriendrequest(){
+                $requester = $_POST['ACCEPTFRIEND'];
+                $currentUser = $_POST['CURRENTUSER'];
+
+                if ($this->friendshipMapper->exists($requester, $currentUser)){
+                        $this->api->beginTransaction();
+                        $friendship = $this->friendshipMapper->find($requester, $currentUser);
+                        if (($requester === $friendship->getFriendUid1() && Friendship::UID1_REQUESTS_UID2 == $friendship->getStatus()) ||
+                                ($requester === $friendship->getFriendUid2() && Friendship::UID2_REQUESTS_UID1 == $friendship->getStatus())){
+                                // ensuring that the friendship request still exists and is not removed
+                                $this->friendshipMapper->accept($friendship);
+                        } else {
+                                error_log("Error in acceptFriendshipRequest");
+                        }
+                        $this->api->commit();
+                }
+
+                return $this->renderJSON(array(true));
+        }
+	/**
+         * @CSRFExemption
+         * @IsAdminExemption
+         * @IsSubAdminExemption
+         * @IsLoggedInExemption
+         *
+         *              
+         * @brief renders the index page
+         * @return an instance of a Response implementation
+         */
+
+         public function removefriendrequest(){
+                $userUid = $_POST['FRIEND'];
+                $sentOrReceived = $_POST['SENTORRECEIVED'];
+                $username = $_POST['CURRENTUSER'];
+                if ($sentOrReceived === 'sent'){
+                        $recipient = $userUid;
+                        $requester = $username;
+                }
+                else if ($sentOrReceived === 'received'){
+                        $recipient = $username;
+                        $requester = $userUid;
+                }
+                else {
+                }
+
+                if($this->friendshipMapper->exists($requester, $recipient)){
+                        $friendshipRequest = new Friendship();
+                        $friendshipRequest->setFriendUid1($requester);
+                        $friendshipRequest->setFriendUid2($recipient);
+                        //$this->friendshipMapper->delete($requester, $recipient);
+                        $this->friendshipMapper->delete($friendshipRequest);
+                        //TODO: return something useful
+                        return $this->renderJSON(array(true));
+                }
+                else {
+                        //TODO: error handling
+                        error_log("cannot find friendshiprequest for removeFriendshipRequest");
+                }
+
+
+        }
+
+   /**
+         * @CSRFExemption
+         * @IsAdminExemption
+         * @IsSubAdminExemption
+         * @IsLoggedInExemption
+         *
+         *              
+         * @brief renders the index page
+         * @return an instance of a Response implementation
+         */
+
+         public function removefriend(){
+
+                $userUid = $_POST['FRIEND'];
+                $currentUser = $_POST['CURRENTUSER'];
+                $friendshipRequest = new Friendship();
+                $friendshipRequest->setFriendUid1($userUid);
+                $friendshipRequest->setFriendUid2($currentUser);
+                $this->friendshipMapper->delete($friendshipRequest);
+
+                return $this->renderJSON(array(true));
+
+        }
 }
