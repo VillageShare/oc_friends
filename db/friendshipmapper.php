@@ -264,10 +264,10 @@ class FriendshipMapper extends Mapper {
 			if ($this->find($uids[0], $uids[1])->getStatus() !== Friendship::DELETED) {
 				throw new AlreadyExistsException('Cannot save Friendship with friend_uid1 = ' . $friendship->getFriendUid1() . ' and friend_uid2 = ' . $friendship->getFriendUid2());
 			}
-			$sql = 'UPDATE `' . $this->getTableName() . '` SET status=?, updated_at=? WHERE (friend_uid1 = ? AND friend_uid2 = ?)';
+			$sql = 'UPDATE `' . $this->getTableName() . '` SET `status`=?, `updated_at`=? WHERE (`friend_uid1`= ? AND `friend_uid2`= ?)';
 		}
 		else {
-			$sql = 'INSERT INTO `'. $this->getTableName() . '` (status, updated_at, friend_uid1, friend_uid2)'.
+			$sql = 'INSERT INTO `'. $this->getTableName() . '` (`status`, `updated_at`, `friend_uid1`, `friend_uid2`)'.
 				' VALUES(?, ?, ?, ?)';
 		}
 		
@@ -307,7 +307,7 @@ class FriendshipMapper extends Mapper {
 			throw new DoesNotExistException("Cannot accept a friendship that does not exist.  uid1 = {$uids[0]}, uid2 = {$uids[1]}");
 		}
 
-		$sql = 'UPDATE `' . $this->getTableName() . '` SET status=?, updated_at=? WHERE (friend_uid1 = ? AND friend_uid2 = ?)';
+		$sql = 'UPDATE `' . $this->getTableName() . '` SET `status`=?, `updated_at`=? WHERE (`friend_uid1`= ? AND `friend_uid2`= ?)';
 		$friendship->setStatus(Friendship::ACCEPTED);
 		$friendship->setUpdatedAt($this->api->getTime());
 		if ($uids[0] !== $friendship->getFriendUid1()) {
@@ -339,12 +339,12 @@ class FriendshipMapper extends Mapper {
 		$uids = $this->sortUids($friendship->getFriendUid1(), $friendship->getFriendUid2());
 
 		if ($this->exists($uids[0], $uids[1])){
-			$sql = 'UPDATE `' . $this->getTableName() . '` SET status=?, updated_at=? WHERE (friend_uid1 = ? AND friend_uid2 = ?)';
+			$sql = 'UPDATE `' . $this->getTableName() . '` SET `status`=?, `updated_at`=? WHERE (`friend_uid1` = ? AND `friend_uid2` = ?)';
 			$friendship = $this->find($uids[0], $uids[1]);
 			//throw new AlreadyExistsException('Cannot save Friendship with friend_uid1 = ' . $friendship->getFriendUid1() . ' and friend_uid2 = ' . $friendship->getFriendUid2());
 		} else {
 
-			$sql = 'INSERT INTO `'. $this->getTableName() . '` (status, updated_at, friend_uid1, friend_uid2)'.
+			$sql = 'INSERT INTO `'. $this->getTableName() . '` (`status`, `updated_at`, `friend_uid1`, `friend_uid2`)'.
 				' VALUES(?, ?, ?, ?)';
 		
 		}
