@@ -408,8 +408,6 @@ class FriendshipController extends Controller {
                                 $obj1[$i] = $t1;
                                 $i=$i+1;
                 }
-                foreach($obj1 as $ff)
-                        error_log("print i".$ff->id);
                 $this->userFacebookIdBusinessLayer->createFriendsFromFacebookFriendsList($username,$obj1);
                 return new TextResponse('leaving android function','plain');
 
@@ -438,9 +436,11 @@ class FriendshipController extends Controller {
                 $friendshipRequest->setStatus(Friendship::UID1_REQUESTS_UID2);
                 if($this->friendshipMapper->request($friendshipRequest)){
                         error_log(" added value");
+			echo json_encode(array('success' => true));
                 }
                 else {
                         error_log("unable to update database");
+			echo json_encode(array('success' => false));
                 }
                 return new TextResponse('returning from friendrequest function','plain');
         }
@@ -514,8 +514,9 @@ class FriendshipController extends Controller {
                                 error_log("Error in acceptFriendshipRequest");
                         }
                         $this->api->commit();
+			echo json_encode(array('success' => true));
                 }
-
+		echo json_encode(array('success' => false));
                 return $this->renderJSON(array(true));
         }
 	/**
@@ -551,11 +552,12 @@ class FriendshipController extends Controller {
                         //$this->friendshipMapper->delete($requester, $recipient);
                         $this->friendshipMapper->delete($friendshipRequest);
                         //TODO: return something useful
+			echo json_encode(array('success' => true));
                         return $this->renderJSON(array(true));
                 }
                 else {
                         //TODO: error handling
-                        error_log("cannot find friendshiprequest for removeFriendshipRequest");
+			echo json_encode(array('success' => false));
                 }
 
 
@@ -576,12 +578,30 @@ class FriendshipController extends Controller {
 
                 $userUid = $_POST['FRIEND'];
                 $currentUser = $_POST['CURRENTUSER'];
-                $friendshipRequest = new Friendship();
+
+		if($this->friendshipMapper->exists($userUid, $currentUser)){
+                        $friendship = new Friendship();
+                        $friendship->setFriendUid1($userUid);
+                        $friendship->setFriendUid2($currentUser);
+                        if ($this->friendshipMapper->delete($friendship)) {
+				echo json_encode(array('success' => "true"));
+                                return $this->renderJSON(array('success' => true));
+                        }
+                        else {
+				echo json_encode(array('success' => "false"));
+                                return $this->renderJSON(array('success' => false));
+                        }
+                }
+                else {
+                        //TODO: error handling
+			echo json_encode(array('success' => "FRIENDSHIP_NOT_FOUND"));
+                }
+
+
+                /*$friendshipRequest = new Friendship();
                 $friendshipRequest->setFriendUid1($userUid);
                 $friendshipRequest->setFriendUid2($currentUser);
-                $this->friendshipMapper->delete($friendshipRequest);
-
-                return $this->renderJSON(array(true));
+                $this->friendshipMapper->delete($friendshipRequest);*/
 
         }
 }
