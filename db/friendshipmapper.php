@@ -44,7 +44,18 @@ class FriendshipMapper extends Mapper {
 	}
 
 
-
+	public function getDeactivatedFriends() {
+		$sql2 = 'SELECT uid as uid FROM `oc_multiinstance_deactivatedusers`';
+                $params2 = array();
+                $deactivatedUsers = array();
+                $query_result2 = $this->execute($sql1, $params2);
+                while ($row = $query_result2->fetchRow()) {
+                        $deactivatedUser = $row['uid'];
+                        array_push($result2, $deactivatedUsers);
+                }
+		
+		return $deactivatedUsers;
+	}
 
 	/**
 	 * Finds all friends for a user 
@@ -53,6 +64,8 @@ class FriendshipMapper extends Mapper {
 	 * @return an array of friends
 	 */
 	public function findAllFriendsByUser($userId){
+		$deactivatedUsers = $this->getDeactivatedFriends();
+
 		$sql = 'SELECT friend_uid2 as friend FROM `' . $this->getTableName() . '` WHERE (`friend_uid1` = ? AND `status` = ?)
 			UNION
 			SELECT friend_uid1 as friend FROM `' . $this->getTableName() . '` WHERE (`friend_uid2` = ? AND `status` = ?)';
@@ -63,13 +76,17 @@ class FriendshipMapper extends Mapper {
 		$query_result = $this->execute($sql, $params);
 		while($row =  $query_result->fetchRow()){
 			$friend = $row['friend'];
-			array_push($result, $friend);
+			if (!in_array($friend, $deactivatedUsers)) {
+				array_push($result, $friend);
+			}
 		}
 		return $result;
 	}
 
 
 	public function findAllFriendshipsByUser($userId){
+		$deactivatedUsers = $this->getDeactivatedFriends();
+
                 $sql = 'SELECT * FROM `' . $this->getTableName() . '` WHERE (`friend_uid1` = ? AND `status` = ?)
                         UNION
                         SELECT * FROM `' . $this->getTableName() . '` WHERE (`friend_uid2` = ? AND `status` = ?)';
@@ -80,7 +97,9 @@ class FriendshipMapper extends Mapper {
                 $query_result = $this->execute($sql, $params);
                 while($row =  $query_result->fetchRow()){
                         $friend = new Friendship($row);
-                        array_push($result, $friend);
+			if((!in_array($friend->getFriendUid1(), $deactivatedUsers)) AND (!in_array($friend->getFriendUid2(), $deactivatedUsers))) {
+                        	array_push($result, $friend);
+			}
                 }
                 return $result;
         }
