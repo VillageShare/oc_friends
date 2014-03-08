@@ -45,7 +45,18 @@ class FriendshipMapper extends Mapper {
 	}
 
 
+	public function getDeactivatedFriends() {
+                $sql2 = 'SELECT uid as uid FROM `oc_multiinstance_deactivatedusers`';
+                $params2 = array();
+                $deactivatedUsers = array();
+                $query_result2 = $this->execute($sql1, $params2);
+                while ($row = $query_result2->fetchRow()) {
+                        $deactivatedUser = $row['uid'];
+                        array_push($result2, $deactivatedUsers);
+                }
 
+                return $deactivatedUsers;
+        }
 
 	/**
 	 * Finds all friends for a user 
