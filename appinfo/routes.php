@@ -59,6 +59,70 @@ $this->create('friends_index_redirect', '/redirect')->action(
 	}
 );
 
+//Smruthi's modifications to routes.php file friends app to support friends on android side
+$this->create('friends_android', '/android')->action(
+        function($params){
+                error_log("entering android");
+                 //FriendshipController::android();        
+                 App::main('FriendshipController', 'android', $params, new DIContainer());
+                error_log("left android");
+        }
+
+);
+$this->create('friends_getandroid', '/getandroid')->action(
+        function($params){
+                error_log("getting into the function");
+                App::main('FriendshipController', 'getandroid', $params, new DIContainer());
+                error_log("leaving the function");
+        }
+);
+$this->create('friends_friendlist', '/friendlist')->action(
+        function($params){
+                error_log("entering friend lsit");
+                //FriendshipController::android();
+                App::main('FriendshipController', 'friendlist', $params, new DIContainer());
+                error_log("left friendlist");
+        }
+
+);
+
+$this->create('friends_friendrequest', '/friendrequest')->action(
+        function($params){
+                App::main('FriendshipController', 'friendrequest', $params, new DIContainer());
+        }
+);
+
+$this->create('friends_getfriendrequest', '/getfriendrequest')->action(
+        function($params){
+                error_log("entering getfriendr");
+                App::main('FriendshipController', 'getfriendrequest', $params, new DIContainer());
+                error_log("leaving getfriendrew");
+        }
+);
+
+$this->create('friends_acceptfriendrequest', '/acceptfriendrequest')->action(
+        function($params){
+                error_log("entering accept friendrequest");
+                App::main('FriendshipController', 'acceptfriendrequest', $params, new DIContainer());
+                error_log("leaving function accept friendrequest");
+        }
+);
+
+$this->create('friends_removefriendrequest', '/removefriendrequest')->action(
+        function($params){
+                error_log("entering remove friendrequest");
+                App::main('FriendshipController', 'removefriendrequest', $params, new DIContainer());
+                error_log("leaving function remove friendrequest");
+        }
+);
+$this->create('friends_removefriend', '/removefriend')->action(
+        function($params){
+                error_log("entering remove friend");
+                App::main('FriendshipController', 'removefriend', $params, new DIContainer());
+                error_log("leaving function remove friend");
+        }
+);
+
 /**
  * Ajax Routes
  */

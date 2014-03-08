@@ -2,13 +2,18 @@ If you haven't already:
 cp oc_friends/ friends/
 Otherwise you will get an error when attempting to enable the app.
 
+In order for the app to render properly, we need to create a symlink
+to the owncloud/apps directory. To do this, enter:
+
+ln -s /path/to/public_html/apps/friends /path/to/public_html/owncloud/apps
+
 Set up with a Facebook App
 In your owncloud install config/config.php, add the following to the $CONFIG array
-{{{
+
   'friends_fb_app_id' => 'MY_FB_APP_ID',
   'friends_fb_app_secret' => 'MY_FB_APP_SECRET',
   'friends_fb_app_url' => 'MY_FB_APP_REDIRECT_URL'
-}}}
+
 
 All of this information can be found on the App Basics Page.
 The MY_FB_APP_REDIRECT_URL is the url that Facebook will redirect your user back to after asking them to login and accept your permissions request for their data.

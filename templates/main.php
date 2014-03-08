@@ -1,7 +1,7 @@
 <div id="app" ng-app="Friends" 
 	ng-init="tab=0;">
-
-	<a href="{{ url('friends_facebook') }}" class="button float-right">Facebook Sync</a>
+	<!-- Disable facebook button until we support it properly -->
+	<!--a href="{{ url('friends_facebook') }}" class="button float-right">Facebook Sync</a-->
 	<h1 class="heading">Friends</h1>
 
 
