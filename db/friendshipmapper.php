@@ -48,10 +48,10 @@ class FriendshipMapper extends Mapper {
 		$sql2 = 'SELECT uid as uid FROM `oc_multiinstance_deactivatedusers`';
                 $params2 = array();
                 $deactivatedUsers = array();
-                $query_result2 = $this->execute($sql1, $params2);
+                $query_result2 = $this->execute($sql2, $params2);
                 while ($row = $query_result2->fetchRow()) {
                         $deactivatedUser = $row['uid'];
-                        array_push($result2, $deactivatedUsers);
+                        array_push($deactivatedUsers, $deactivatedUser);
                 }
 		
 		return $deactivatedUsers;
@@ -74,8 +74,9 @@ class FriendshipMapper extends Mapper {
 		$result = array();
 		
 		$query_result = $this->execute($sql, $params);
-		while($row =  $query_result->fetchRow()){
+		while($row = $query_result->fetchRow()){
 			$friend = $row['friend'];
+			shell_exec("echo \"findAllFriendsByUser: {$friend}\" >> /home/public_html/apps/friends/debug.log");
 			if (!in_array($friend, $deactivatedUsers)) {
 				array_push($result, $friend);
 			}
@@ -97,6 +98,7 @@ class FriendshipMapper extends Mapper {
                 $query_result = $this->execute($sql, $params);
                 while($row =  $query_result->fetchRow()){
                         $friend = new Friendship($row);
+			shell_exec("echo \"findAllFriendsByUser: {$friend->getFriendUid1()} and {$friend->getFriendUid2()}\" >> /home/public_html/apps/friends/debug.log");
 			if((!in_array($friend->getFriendUid1(), $deactivatedUsers)) AND (!in_array($friend->getFriendUid2(), $deactivatedUsers))) {
                         	array_push($result, $friend);
 			}
